@@ -1,51 +1,46 @@
-class BSTNode:
-def __init__(self, device: Device):
-self.device = device
-self.left = self.right = None
-class BSTRegistry:
-def __init__(self): self.root = None
-def insert(self, device: Device): pass # TODO
-def search(self, device_id: str): pass # TODO
-def update_status(self, device_id: str, status: str): pass # TODO
-def inorder(self): pass # TODO
-# ── Generator data awal ───────────────────────────────────────────
-def generate_iot_network(n_devices=40, n_extra_edges=20, seed=23):
-rng = np.random.default_rng(seed)
-devices = []
-# 1 gateway, beberapa server, sisanya sensor
-devices.append(Device('GATEWAY_0', 'GATEWAY'))
-for i in range(1, 5):
-devices.append(Device(f'SERVER_{i}', 'SERVER'))
-for i in range(5, n_devices):
-devices.append(Device(f'SENSOR_{i}', 'SENSOR',
-last_reading=float(rng.uniform(0, 100))))
-# Spanning tree: pastikan terhubung
-perm = rng.permutation(n_devices)
-edges = []
-for i in range(1, n_devices):
-u = devices[perm[i-1]].device_id
-v = devices[perm[i]].device_id
-lat = int(rng.integers(5, 200)) # 5–200 ms
-edges.append((u, v, lat))
-for _ in range(n_extra_edges):
-i, j = rng.choice(n_devices, 2, replace=False)
-lat = int(rng.integers(5, 200))
-edges.append((devices[i].device_id, devices[j].device_id, lat))
-return devices, edges
-def main():
-graph = IoTGraph()
-bst_reg = BSTRegistry()
-alert_queue = AlertPriorityQueue()
-device_stacks: Dict[str, AlertStack] = {}
-alert_counter = 0
-devices, edges = generate_iot_network(40, 20, seed=23)
-for d in devices:
-graph.add_device(d)
-bst_reg.insert(d)
-device_stacks[d.device_id] = AlertStack(kapasitas=20)
-for u, v, lat in edges:
-graph.add_link(u, v, lat)
-print('IoT Monitoring System Ketik BANTUAN untuk daftar perintah')
-# TODO: implementasikan loop CLI
-if __name__ == '__main__':
-main()
+import numpy as np
+import time
+import random
+from dataclasses import dataclass
+from typing import Optional, List
+
+# Konfigurasi Awal [4]
+np.random.seed(23)
+random.seed(23)
+
+DEVICE_TYPES = ['SENSOR', 'GATEWAY', 'SERVER']
+ALERT_TYPES = {'CRITICAL': 1, 'WARNING': 2, 'INFO': 3}
+
+@dataclass
+class Device:
+    device_id: str
+    tipe: str           # SENSOR / GATEWAY / SERVER
+    status: str = 'ONLINE'
+    last_reading: float = 0.0
+
+@dataclass
+class Alert:
+    alert_id: int
+    device_id: str
+    tipe: int           # 1=CRITICAL, 2=WARNING, 3=INFO
+    pesan: str
+    timestamp: float
+    def detect_isolated_devices(graph, gateway: str = 'GATEWAY_0') -> List[str]:
+    """
+    Mendeteksi perangkat yang terisolasi dari gateway menggunakan DFS.
+    Big-O: O(V + E) [9].
+    """
+    # Gunakan Stack berbasis Linked List sesuai aturan proyek [10]
+    stack = [gateway] # List Python digunakan sebagai array bantuan penyimpan node
+    discovered = {gateway}
+    
+    while stack:
+        u = stack.pop()
+        # Eksplorasi tetangga node saat ini [12]
+        curr = graph.adj.get(u)
+        while curr:
+            v = curr.dest
+            if v not in discovered:
+                discovered.add(v)
+                stack.append(v)
+            curr = curr.next
