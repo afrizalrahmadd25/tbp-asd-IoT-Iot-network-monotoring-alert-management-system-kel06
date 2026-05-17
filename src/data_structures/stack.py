@@ -3,6 +3,7 @@ import time
 import random
 from dataclasses import dataclass
 from typing import Optional, List
+from linked_list import LLNode
 
 # Konfigurasi Awal [4]
 np.random.seed(23)

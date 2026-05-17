@@ -3,6 +3,7 @@ import time
 import random
 from dataclasses import dataclass
 from typing import Optional, List
+from linked_list import LLNode
 
 # Konfigurasi Awal [4]
 np.random.seed(23)
@@ -25,7 +26,8 @@ class Alert:
     tipe: int           # 1=CRITICAL, 2=WARNING, 3=INFO
     pesan: str
     timestamp: float
-    class Edge:
+
+class Edge:
     def __init__(self, dest: str, latency: int):
         self.dest = dest
         self.latency = latency

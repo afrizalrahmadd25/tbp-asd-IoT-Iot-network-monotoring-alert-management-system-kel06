@@ -25,7 +25,9 @@ class Alert:
     tipe: int           # 1=CRITICAL, 2=WARNING, 3=INFO
     pesan: str
     timestamp: float
-    def detect_isolated_devices(graph, gateway: str = 'GATEWAY_0') -> List[str]:
+
+
+def detect_isolated_devices(graph, gateway: str = 'GATEWAY_0') -> List[str]:
     """
     Mendeteksi perangkat yang terisolasi dari gateway menggunakan DFS.
     Big-O: O(V + E) [9].

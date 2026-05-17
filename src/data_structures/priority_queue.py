@@ -3,6 +3,7 @@ import time
 import random
 from dataclasses import dataclass
 from typing import Optional, List
+import linked_list
 
 # Konfigurasi Awal [4]
 np.random.seed(23)
@@ -27,12 +28,12 @@ class Alert:
     timestamp: float
 class AlertPriorityQueue:
     def __init__(self):
-        self.head: Optional[LLNode] = None
+        self.head: Optional[linked_list.LLNode] = None
         self._size = 0
 
     def enqueue(self, alert: Alert):
         """Big-O: O(n) - Sisipkan berdasarkan prioritas ASC [6]."""
-        new_node = LLNode(alert)
+        new_node = linked_list.LLNode(alert)
         if not self.head or alert.tipe < self.head.data.tipe:
             new_node.next = self.head
             self.head = new_node
