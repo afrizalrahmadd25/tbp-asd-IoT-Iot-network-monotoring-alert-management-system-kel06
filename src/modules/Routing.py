@@ -3,6 +3,7 @@ import time
 import random
 from dataclasses import dataclass
 from typing import Optional, List
+from typing import Tuple, Dict
 
 # Konfigurasi Awal [4]
 np.random.seed(23)
