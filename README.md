@@ -29,5 +29,25 @@ Sistem ini menggunakan Struktur data berupa:
       -Digunakan untuk: Mencari jalur dengan total latensi minimum dari GATEWAY_0 ke setiap perangkat dalam         jaringan.
   6. Selection Sort (pada Linked List)
      -Digunakan untuk: Mengurutkan daftar perangkat berdasarkan latensi ke gateway setelah Dijkstra               selesai, guna menghasilkan laporan audit yang terurut dari perangkat terdekat ke terjauh.
-# Fitur Program
+# Fitur Sistem
+  1. Manajemen perangkat IoT (ADD_DEVICE, ADD_LINK)
+  2. Alert Priority Queue — CRITICAL selalu diproses duluan
+  3. Riwayat alert per-device via AlertStack (HISTORY)
+  4. Rollback status perangkat (ROLLBACK_STATUS)
+  5. Routing latensi minimum Dijkstra (ROUTING)
+  6. Deteksi perangkat terisolasi DFS (ISOLASI)
+  7. Audit latensi seluruh jaringan (AUDIT_LATENSI)
+  8. Laporan jaringan lengkap (LAPORAN_JARINGAN)
+
+# Instalasi
+git clone https://github.com/afrizalrahmadd25/tbp-asd-IoT-...
+cd tbp-asd-IoT-...
+pip install -r requirements.txt
+
+# Cara Menjalankan Program
+python src/main.py
+
+# Pengujian
+pytest tests/ -v
+
      
