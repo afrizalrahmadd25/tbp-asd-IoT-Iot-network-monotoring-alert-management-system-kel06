@@ -1,6 +1,6 @@
 #set document(
-  title: "Laporan Praktikum Fisika Dasar",
-  author: "dija",
+  title: "IoT Monitoring & Alert Management System",
+  author: "Kelompok 6",
   date: datetime.today(),
 )
 
@@ -11,6 +11,7 @@
 
 #set text(
   size: 12pt,
+  font: "STIX Two Text",
 )
 
 #set heading(numbering: (..nums) => {
@@ -56,6 +57,28 @@
   [$#calc.round(num*(calc.pow(10,raise)), digits:round) times 10^(-#raise)$]
 
 }
+
+#align(center)[
+  #text(16pt)[
+    *IoT MONITORING & ALERT MANAGEMENT SYSTEM*
+  ] \ \
+  #text(12pt)[
+    *Algoritma dan Struktur Data* \ Dosen Pengampu: Dr.Eng. Ir.  Aji Ery Burhandenny, ST., M.AIT.
+  ] \ \
+
+  
+  #text(12pt)[
+    Disusun Oleh: \ Aisyah Adielya Zahra (25051030026) \ Afrizal Rahmad Dani (25051030002) \ Muhammad Hanafi Aqillah Gustyawan (25051030004) \ Yafi Dwi Pramuaji (25051030028)
+  ] \ \
+  #text(16pt)[
+    *PROGRAM STUDI TEKNIK ELEKTRO \ DEPARTEMEN PENDIDIKAN TEKNIK ELEKTRO \ FAKULTAS TEKNIK \ UNIVERSITAS NEGERI YOGYAKARTA \ YOGYAKARTA*
+  ] \
+  #text(12pt)[
+    2026
+  ]
+]
+
+#pagebreak()
 
 == pendahuluan
 
