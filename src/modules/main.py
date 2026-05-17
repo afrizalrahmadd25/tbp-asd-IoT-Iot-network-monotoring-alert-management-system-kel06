@@ -3,11 +3,11 @@ import time
 import random
 from typing import Optional, Dict, List, Tuple
 
-from modules.graph import IoTGraph, Device, Alert
-from modules.priority_queue import AlertPriorityQueue
-from modules.bst_registry import BSTRegistry
-from modules.stack import AlertStack
-from modules.dijkstra import dijkstra_latensi, reconstruct_path, get_bottleneck_link
+from data_structures.graph import IoTGraph, Device, Alert
+from data_structures.priority_queue import AlertPriorityQueue
+from data_structures.bst_registry import BSTRegistry
+from data_structures.stack import AlertStack
+from modules.Djikstra import dijkstra_latensi, reconstruct_path, get_bottleneck_link
 
 def main():
     # Inisialisasi komponen sistem sesuai spesifikasi arsitektur [1]
