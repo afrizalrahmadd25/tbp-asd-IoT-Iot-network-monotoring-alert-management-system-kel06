@@ -239,7 +239,13 @@
 ]
 
 === Arsitektur Sistem
+==== Diagram Blok Sistem
+==== Alur Data Antar Modul
+==== Diagram Kelas (_Class Diagram_)
+==== Interaksi Modul dalam CLI
+
 === Desain Modul
+
 === Pseudocode
 
 #pagebreak()
@@ -247,8 +253,20 @@
   = BAB IV \ HASIL DAN PEMBAHASAN
 ]
 
-
 === Hasil
+
+==== Representasi Topologi Jaringan dan Registry Perangkat
+#ind[Sistem berhasil menginisialisasi topologi jaringan Mesh yang terdiri dari 40 perangkat (1 unit _gateway_, 4 unit server, dan 35 unit sensor) yang dihubungkan oleh 60 _edge_ berbobot. Topologi ini direpresentasikan secara efisien menggunakan struktur data Graph Adjacency List berbasis _Linked List_. Seluruh identitas perangkat berhasil disimpan dalam Binary Search Tree (BST) sebagai _Device Registry_ utama, yang memungkinkan operasi pencarian dan pembaruan status perangkat berdasarkan _device_id_ dengan kompleksitas waktu yang optimal.]
+
+==== Optimasi Rute dengan Algoritma Dijkstra
+#ind[Implementasi algoritma Dijkstra berhasil menentukan jalur dengan total latensi minimum dari GATEWAY_0 ke setiap perangkat dalam jaringan. Berdasarkan pengujian dengan _random seed_ tetap (seed 23), sistem menghasilkan rentang latensi antara 5 ms hingga 200 ms untuk setiap hubungan antar node. Jalur terpendek yang ditemukan oleh algoritma ini menjadi fondasi bagi sistem untuk menjamin pengiriman data sensor menuju server pusat dengan hambatan waktu seminimal mungkin.]
+
+==== Pengelolaan Antrean Alert dan Riwayat Perangkat
+#ind[Sistem manajemen _alert_ telah berhasil mengimplementasikan mekanisme Priority Queue berbasis _Singly Linked List_ terurut. _Alert_ dikategorikan ke dalam tiga tingkat prioritas: CRITICAL, WARNING, dan INFO. Hasil pengujian menunjukkan bahwa sistem secara otomatis menempatkan _alert_ berkategori CRITICAL pada posisi terdepan antrean meskipun pesan tersebut masuk secara bersamaan atau setelah pesan dengan prioritas lebih rendah. Selain itu, setiap perangkat mampu menyimpan riwayat hingga 20 entri alert terakhir menggunakan struktur data Stack, yang memungkinkan pengguna melakukan penelusuran status secara LIFO (_Last In, First Out_).]
+
+==== Laporan Audit dan Antarmuka CLI
+#ind[Fitur laporan audit pada sistem ini menyajikan daftar perangkat yang telah diurutkan berdasarkan hasil kalkulasi latensi Dijkstra. Proses pengurutan dilakukan menggunakan algoritma Selection Sort pada _Linked List_ untuk menghasilkan urutan perangkat dari yang terdekat hingga terjauh secara sistematis. Seluruh fungsionalitas ini diintegrasikan ke dalam antarmuka Command Line Interface (CLI), yang memungkinkan pengguna memonitor jaringan dan manajemen _alert_ secara menyeluruh tanpa memerlukan _Graphical User Interface_ (GUI).]
+
 === Pembahasan
 
 #pagebreak()
@@ -267,22 +285,3 @@
 
 \
 #set par(justify: true, hanging-indent: 2em)
-GeeksforGeeks. (n.d.). _Difference between singly linked list and doubly linked list_. https://www.geeksforgeeks.org/dsa/difference-between-singly-linked-list-and-doubly-linked-list/
-
-GeeksforGeeks. (n.d.). _Stack data structure_. https://www.geeksforgeeks.org/dsa/stack-data-structure/
-
-Ghazal, M., & Hamouda, S. (n.d.). _An IoT smart queue management system with real-time_. Semanticscholar. https://www.semanticscholar.org/paper/An-IoT-Smart-Queue-Management-System-with-Real-Time-Ghazal-Hamouda/aa6ca0e2c501e53afa976d73f80626d2142acf87
-
-Leveraging priority queueing in IoT-edge-fog-cloud computing systems. (2025). _IEEE_. https://ieeexplore.ieee.org/iel8/6287639/10820123/10979951.pdf
-
-Munir, R. (2021). _BFS dan DFS (Bagian 1)_. Informatika STEI ITB. https://informatika.stei.itb.ac.id/~rinaldi.munir/Stmik/2020-2021/BFS-DFS-2021-Bag1.pdf
-
-Munir, R. (2007). _Penerapan algoritma Dijkstra dalam pengalokasian bandwidth_. Informatika STEI ITB. https://informatika.stei.itb.ac.id/~rinaldi.munir/Matdis/2006-2007/Makalah/Makalah0607-35.pdf
-
-Recent advances in Internet of Things solutions for early warning systems: A review. (2022). _Sensors_, 22(6). https://pmc.ncbi.nlm.nih.gov/articles/PMC8954208/
-
-Scientific Reports. (2025). _Developing real-time IoT-based public safety alert and emergency response systems_. Nature. https://www.nature.com/articles/s41598-025-13465-7
-
-Scientific Reports. (2025). _Dijkstra's shortest path algorithm_. Nature. https://www.nature.com/articles/s41598-025-13983-4
-
-TutorialsPoint. (n.d.). _Time and space complexity analysis of queue operations_. https://www.tutorialspoint.com/article/time-and-space-complexity-analysis-of-queue-operations
