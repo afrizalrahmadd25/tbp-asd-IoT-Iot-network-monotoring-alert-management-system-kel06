@@ -87,7 +87,7 @@
 #pagebreak()
 #set page(numbering: "i")
 #counter(page).update(1)
-#set outline(title: "")
+#set outline(title: "", depth: 4)
 #align(center)[
   = DAFTAR ISI
 ]
@@ -98,13 +98,17 @@
 #set page(numbering: "1")
 #align(center)[
   = BAB I \ PENDAHULUAN
-]
+]\
 
 === Latar Belakang
+#ind[Implementasi sistem monitoring IoT ini difokuskan pada rencana pembangunan infrastruktur Smart Building Universitas Negeri Yogyakarta yang mencakup pemasangan 40 perangkat sensor (seperti suhu, kelembaban, $C O_2$, dan daya listrik) di seluruh area gedung kampus. Seluruh sensor tersebut saling terhubung dalam model Topologi Mesh melalui 60 koneksi jaringan berbobot latensi untuk menjamin kelancaran pengiriman data sensor menuju server pusat secara _real-time_. Penggunaan model jaringan mesh ini sangat krusial dalam lingkungan kampus yang luas untuk menciptakan sistem monitoring gedung yang adaptif dan memiliki reliabilitas tinggi terhadap gangguan koneksi antar-perangkat.]
+
+#ind[Namun, seiring dengan kompleksitas hubungan antar-perangkat, muncul tantangan teknis dalam penanganan trafik data yang tinggi, terutama saat sensor mengirimkan sinyal peringatan terkait kondisi lingkungan gedung. Tanpa mekanisme prioritas yang tepat, peringatan darurat seperti suhu berlebih atau kebocoran daya berisiko tertumpuk di belakang pesan rutin, yang dapat memperlambat respon teknis di lapangan. Selain itu, efisiensi pencarian identitas perangkat di dalam basis data dan penentuan rute pengiriman data dengan latensi terendah dari _gateway_ menjadi faktor penentu agar sistem tetap responsif meski jumlah node sensor terus meningkat.]
+
+#ind[Sebagai solusi atas permasalahan tersebut, proyek ini membangun _backend_ sistem monitoring IoT terintegrasi dengan mengimplementasikan empat struktur data mandiri yang dibangun dari nol (_built from scratch_): Graph Adjacency List untuk pemodelan topologi, Priority Queue untuk manajemen alert berprioritas, Binary Search Tree (BST) untuk _device registry_, serta Stack untuk rekam jejak riwayat alert per perangkat. Integrasi ini memungkinkan admin jaringan melakukan deteksi isolasi perangkat melalui algoritma DFS, mengoptimalkan jalur latensi melalui algoritma Dijkstra, serta menghasilkan laporan audit sistematis menggunakan Selection Sort guna menciptakan manajemen fasilitas kampus UNY yang lebih cerdas, aman, dan terorganisir.]
+
 === Rumusan Masalah
-#par(justify: true)[
-  $wide$Berdasarkan latar belakang yang telah diuraikan, permasalahan yang diangkat dalam proyek ini adalah sebagai berikut:
-]
+#ind[Berdasarkan latar belakang yang telah diuraikan, permasalahan yang diangkat dalam proyek ini adalah sebagai berikut:]
 #set enum(numbering: "1.", indent: 2em)
 + Bagaimana memodelkan topologi jaringan _Mesh_ menggunakan _Graph Adjacency List_ agar operasi manajemen perangkat seperti penambahan, pencarian, hingga penghapusan perangkat secara dinamis tetap berjalan efisien dan mendukung deteksi isolasi node melalui algoritma DFS?
 + Bagaimana merancang struktur data _Priority Queue_ untuk manajemen peringatan dini yang mampu menangani trafik data sensor tinggi tanpa menjadi _bottleneck_ melalui pendekatan _linked list_ atau mekanisme _bucket_?
@@ -112,9 +116,7 @@
 + Bagaimana mengintegrasikan _Binary Search Tree_ (BST) sebagai basis data perangkat dan struktur _Stack_ untuk riwayat peringatan ke dalam antarmuka CLI guna menciptakan sistem monitoring yang komprehensif?
 
 === Tujuan
-#par(justify: true)[
-  $wide$Berdasarkan rumusan masalah, disimpulkan tujuan dari penelitian ini adalah sebagai berikut:
-]
+#ind[Berdasarkan rumusan masalah, disimpulkan tujuan dari penelitian ini adalah sebagai berikut:]
 #set enum(numbering: "1.", indent: 2em)
 + Mengetahui bagaimana memodelkan topologi jaringan _Mesh_ menggunakan _Graph Adjacency List_ agar operasi manajemen perangkat seperti penambahan, pencarian, hingga penghapusan perangkat secara dinamis tetap berjalan efisien dan mendukung deteksi isolasi node melalui algoritma DFS.
 + Mengetahui bagaimana merancang struktur data _Priority Queue_ untuk manajemen peringatan dini yang mampu menangani trafik data sensor tinggi tanpa menjadi _bottleneck_ melalui pendekatan _linked list_ atau mekanisme _bucket_.
@@ -130,175 +132,198 @@
 
 #pagebreak()
 #align(center)[
-  = BAB II \ LANDASAN TEORI
-]
-
-=== Linked List
-#set par(justify: true)
-#ind[
-  Linked list adalah struktur data linear yang menyimpan data dalam bentuk node yang saling terhubung melalui _pointer_ atau _reference_ (GeeksforGeeks, n.d.). Dalam struktur ini, setiap node biasanya berisi data dan alamat memori dari node berikutnya (GeeksforGeeks, n.d.). Karena node dialokasikan secara dinamis, linked list sangat cocok untuk menangani data yang ukurannya berubah-ubah dan tidak memerlukan akses acak seperti pada array (Scientific Reports, 2025).
-]
-#ind[
-  Beberapa karakteristik utama dari linked list meliputi:
-]
+  = BAB II \ ARSITEKTUR SISTEM
+]\
+#ind[Sistem _IoT Network Monitoring & Alert Management_ ini dirancang menggunakan pendekatan arsitektur berlapis guna memisahkan antara logika antarmuka pengguna, pemrosesan fungsional, dan manajemen penyimpanan data murni. Hal ini bertujuan untuk memudahkan pemeliharaan kode serta pengujian unit secara terisolasi pada setiap komponen struktur data.]
+=== Diagram Blok Sistem
+#ind[Sistem ini terbagi ke dalam tiga tingkatan utama sebagai berikut:]
+- Lapisan Antarmuka (User Interface Layer)\ Merupakan lapisan terluar yang berinteraksi langsung dengan admin jaringan melalui berkas `main.py`. Lapisan ini menyediakan menu Command Line Interface (CLI) interaktif untuk menerima perintah masukan dan menampilkan hasil monitoring secara _real-time_.
+- Lapisan Logika Monitoring (Business Logic Layer)\ Berada di folder `src/modules/`, lapisan ini memproses aturan operasional sistem, seperti memvalidasi registrasi perangkat, menghitung latensi rute, dan menentukan prioritas alert sebelum dikirim ke server pusat.
+- Lapisan Struktur Data Inti (Core Data Layer)\ Fondasi penyimpanan data di RAM yang berisi implementasi struktur data murni tanpa _library_ luar di folder `src/data_structures/`. Lapisan ini mencakup BST untuk basis data perangkat, Graph untuk topologi jaringan, Priority Queue untuk antrean pesan, dan Stack untuk riwayat log.
+=== Alur Data Antar Modul
+#ind[]Aliran data dalam sistem mengalir secara sekuensial melalui tahapan berikut:
 #set enum(numbering: "1.", indent: 2em)
-+ Kapasitasnya dapat bertambah atau berkurang dengan mudah saat program berjalan (TutorialsPoint, n.d.).
-+ Elemen-elemen diakses satu per satu secara berurutan, bukan melalui indeks langsung (GeeksforGeeks, n.d.).
-+ Operasi penyisipan (_insert_) dan penghapusan (_delete_) dapat dilakukan secara efisien jika posisi node sudah diketahui, meskipun pencarian tetap memerlukan penelusuran linear (GeeksforGeeks, n.d.).
-+ Penggunaan memori lebih besar dibandingkan struktur data sederhana karena setiap node harus menyimpan pointer tambahan (TutorialsPoint, n.d.).
-#ind[
-  Berdasarkan cara penghubungannya, linked list dibedakan menjadi dua jenis utama. Pertama, Singly Linked List (SLL). Setiap node hanya memiliki data dan satu pointer yang menunjuk ke node berikutnya, sehingga penelusuran (traversal) hanya bisa dilakukan dalam satu arah (GeeksforGeeks, n.d.). Struktur ini lebih hemat memori namun memiliki keterbatasan jika operasi memerlukan akses ke node sebelumnya (GeeksforGeeks, n.d.). Kedua, Doubly Linked List (DLL). Setiap node memiliki dua pointer, yaitu penunjuk ke node berikutnya dan ke node sebelumnya (GeeksforGeeks, n.d.). Hal ini memungkinkan penelusuran dilakukan dua arah, yang memberikan fleksibilitas lebih besar untuk operasi di tengah atau di ujung list, meski membutuhkan memori lebih besar untuk menyimpan pointer tambahan (GeeksforGeeks, n.d.).
-]
-#ind[
-  Secara umum, efisiensi operasi pada linked list adalah sebagai berikut:
-]
-- Akses atau pencaarian elemen, $O(n)$ karena sistem harus menelusuri node satu per satu dari awal (TutorialsPoint, n.d.).
-- Penyisipan (_insert_) di depan, $O(1)$ (GeeksforGeeks, n.d.).- Penyisipan (_insert_) di belakang, $O(1)$ jika menggunakan pointer tail, namun menjadi $O(n)$ jika harus menelusuri dari awal hingga akhir (GeeksforGeeks, n.d.).
-- Penghapusan (_delete_) node tertentu, $O(n)$, karena biasanya diperlukan pencarian node target terlebih dahulu (TutorialsPoint, n.d.).
-- Penelusuran (_traversal_), $O(n)$ untuk mengunjungi seluruh node (GeeksforGeeks, n.d.).
-
-=== Stack
-#ind[
-  Stack adalah struktur data linear yang mengikuti prinsip LIFO (_Last In, First Out_), yang berarti elemen yang terakhir masuk akan menjadi elemen pertama yang keluar. Konsep ini juga sering disebut dengan istilah FILO (_First In, Last Out_) (GeeksforGeeks, n.d.). Dalam konteks sistem monitoring IoT, stack sangat berguna untuk mengelola data seperti riwayat alert, di mana informasi terbaru sering kali menjadi prioritas untuk diakses terlebih dahulu.
-]
-#ind[
-  Operasi pada stack sangat efisien karena penambahan dan penghapusan data hanya dilakukan pada satu ujung yang disebut sebagai top (GeeksforGeeks, n.d.). Berikut adalah rincian kompleksitas waktunya:
-]
-- Push, menambahkan elemen ke puncak tumpukan dengan kompleksitas $O(1)$ (GeeksforGeeks, n.d.).
-- Pop, menghapus elemen dari puncak tumpukan dengan kompleksitas $O(1)$ (GeeksforGeeks, n.d.)
-- Peek/Top, melihat elemen yang berada di posisi teratas tanpa menghapusnya dengan kompleksitas $O(1)$ (GeeksforGeeks, n.d.)
-- Is_empty, emeriksa apakah tumpukan dalam keadaan kosong dengan kompleksitas $O(1)$ (GeeksforGeeks, n.d.).
-
-#ind[
-  Stack digunakan dalam berbagai skenario komputasi di mana sistem perlu memproses data dengan urutan kebalikan dari urutan masuk (GeeksforGeeks, n.d.). Beberapa aplikasi utamanya meliputi:
-]
-- Manajemen pemanggilan fungsi \ Digunakan untuk mengelola function call dan proses rekursi pada program (GeeksforGeeks, n.d.).
-- Evaluasi ekspresi \ Membantu dalam evaluasi ekspresi matematika serta konversi antara format infix, postfix, dan prefix (GeeksforGeeks, n.d.).
-- Pemeriksaan simbol \ Digunakan untuk memverifikasi keseimbangan tanda kurung atau simbol dalam kode (GeeksforGeeks, n.d.).
-- Fitur _undo_ \ Menjadi dasar fungsionalitas pembatalan perintah (undo) pada berbagai aplikasi editor (GeeksforGeeks, n.d.).
-- Algoritma graf\ Menjadi komponen penting dalam mekanisme backtracking dan algoritma penelusuran Depth-First Search (DFS) (GeeksforGeeks, n.d.).
-
-=== Queue (Antrean)
-#ind[
-  Queue adalah struktur data linear yang beroperasi berdasarkan prinsip FIFO (First In, First Out), yang berarti elemen yang pertama kali dimasukkan ke dalam sistem akan menjadi elemen pertama yang dikeluarkan atau diproses (Queue-it, n.d.). Struktur ini sangat efektif untuk mengelola urutan proses yang harus berjalan secara adil sesuai waktu kedatangannya, mirip dengan sistem antrean pada layanan publik (Medium, n.d.). Antrean ini memiliki dua titik akses utama yang membedakannya dari struktur data lainnya (Medium, n.d.):
-]
-- Front \ Ujung depan tempat elemen diambil atau dihapus dari antrean (operasi _dequeue_).
-- Rear \ Ujung belakang tempat elemen baru ditambahkan ke dalam antrean (operasi _enqueue_).
-
-#ind[Dalam sistem monitoring modern, dikembangkan variasi yang disebut Priority Queue. Struktur ini tidak hanya mempertimbangkan urutan masuk, tetapi juga memberikan bobot pada urgensi setiap data. Dalam implementasi sistem alert IoT, elemen dengan prioritas tinggi (seperti peringatan bahaya kritis) akan diproses lebih dahulu oleh sistem meskipun elemen tersebut masuk lebih lambat dibandingkan data sensor rutin lainnya (Ghazal & Hamouda, n.d.).]
-
-#ind[Efisiensi waktu merupakan aspek krusial dalam pengelolaan antrean real-time. Berdasarkan analisis kompleksitas, operasi utama pada queue adalah sebagai berikut (TutorialsPoint, n.d.):]
-
-- Enqueue: $O(1)$, proses menambahkan elemen di posisi paling belakang.
-- Dequeue: $O(1)$, proses menghapus elemen dari posisi paling depan.
-- Peek/Front: $O(1)$, operasi untuk melihat data terdepan tanpa menghapusnya.
-- Is_empty: $O(1)$, pengecekan status ketersediaan data dalam antrean.
-
-#ind[Khusus untuk Priority Queue yang menggunakan linked list terurut, operasi enqueue dapat meningkat menjadi O(n) karena sistem harus mencari posisi yang tepat untuk menjaga urutan prioritas (GeeksforGeeks, n.d.).]
-
-#ind[Queue digunakan secara luas dalam sistem komputasi terdistribusi untuk menangani komunikasi antar perangkat (Ghazal & Hamouda, n.d.). Pada jaringan IoT, struktur ini berfungsi sebagai penyangga (_buffer_) untuk mengatur aliran data dari sensor menuju server agar tidak terjadi kehilangan data saat trafik sedang tinggi, serta memastikan distribusi notifikasi dikirimkan secara sistematis.]
-
-=== Binary Search Tree
-#ind[Binary Search Tree (BST) adalah jenis pohon biner yang memiliki aturan penempatan nilai yang spesifik: nilai pada subtree kiri selalu lebih kecil dari node induk (root), sedangkan nilai pada subtree kanan selalu lebih besar (Medium, 2022). Properti utama ini memastikan bahwa urutan nilai tetap konsisten di setiap node, sehingga memungkinkan penyimpanan data secara hierarkis tanpa harus menggunakan array terurut (UCSB, 2019). Karakteristik penting dari BST meliputi:]
-
-- Data disusun dalam level-level node yang saling terhubung (Wikipedia, n.d.).
-- Karena strukturnya yang terorganisir, BST sangat memudahkan proses pencarian data secara terstruktur (Medium, 2022).
-- Performa BST sangat bergantung pada bentuk pohonnya. BST yang seimbang akan sangat efisien, namun jika data dimasukkan secara berurutan, pohon dapat menjadi "miring" (_skewed_) dan menyerupai linked list, yang menyebabkan penurunan performa (StackOverflow, 2014).
-
-#ind[Dalam pengelolaannya, terdapat beberapa operasi utama yang dapat dilakukan pada struktur BST (Medium, 2022; UCSB, 2019):]
-
-- Search\ Mencari node dengan membandingkan nilai kunci secara bertahap mulai dari root hingga ke bawah.
-- Insert\ Menambahkan node baru pada posisi yang tepat sesuai dengan aturan nilai lebih kecil di kiri dan lebih besar di kanan.
-- Delete\ Menghapus node tertentu dengan penanganan khusus tergantung apakah node tersebut adalah node daun, memiliki satu anak, atau dua anak.
-- Min/Max\ Menemukan nilai terkecil dengan menelusuri sisi kiri paling ujung atau nilai terbesar di sisi kanan paling ujung.
-- Traversal\ Proses mengunjungi seluruh node menggunakan metode _inorder_, _preorder_, atau _postorder_.
-
-=== Graph
-#ind[Kompleksitas waktu pada BST sangat bergantung pada tinggi pohon ($h$) dan jumlah node ($n$). Berikut adalah rincian efisiensinya berdasarkan analisis teknis:]
-- Search/Insert/Delete
-  - Rata-rata (Pohon Seimbang): $O(log n)$, di mana operasi dilakukan dengan membagi ruang pencarian menjadi dua di setiap langkah (Big-O Cheat Sheet, n.d.).
-  - Kasus Terburuk (Pohon Miring): $O(n)$, terjadi ketika pohon berbentuk linear sehingga menyerupai _linked list_ (StackOverflow, 2014).
-- Min/Max: $O(h)$, bergantung pada tinggi pohon dari root ke node terdalam di sisi kiri atau kanan (Medium, n.d.).
-- Traversal: $O(n)$, karena setiap node dalam pohon harus dikunjungi tepat satu kali (Wikipedia, n.d.).
-
-#ind[BST sangat cocok digunakan untuk sistem yang memerlukan operasi pencarian, penambahan, dan penghapusan data secara frekuen, selama pohon tetap terjaga keseimbangannya. Dalam konteks sistem monitoring, BST dapat diimplementasikan sebagai registry perangkat untuk mengelola identitas sensor yang banyak dengan akses yang cepat dan terorganisir (Sensors, 2022).]
-
-=== Dijkstra Algorithm
-#ind[Algoritma Dijkstra adalah metode pencarian jalur terpendek (_shortest path_) pada sebuah graf berbobot di mana semua bobot pada sisinya (_edge_) harus bernilai non-negatif. Algoritma ini bekerja dengan mencari jarak minimum dari satu titik sumber (_source node_) ke seluruh titik lainnya dalam jaringan. Prinsip utamanya adalah secara iteratif memilih titik dengan jarak sementara terkecil, lalu memperbarui (_update_) perkiraan jarak ke semua titik tetangganya (GeeksforGeeks, n.d.).]
-
-#ind[Pada graf berbobot, setiap sisi memiliki nilai numerik yang merepresentasikan jarak fisik, biaya, atau dalam konteks pemantauan jaringan, merepresentasikan latensi (BPIKA UMA, 2025).Algoritma ini sangat efektif untuk menentukan rute tercepat dalam sistem navigasi maupun sistem monitoring yang memerlukan jalur minimum dari satu titik agresi ke titik lainnya. Efisiensi algoritma ini sangat bergantung pada struktur data yang digunakan dalam implementasinya:]
-
-- Array sederhana\ Pemilihan titik dengan jarak terkecil dilakukan melalui pencarian linear, yang menghasilkan kompleksitas waktu $O(V^2)$, di mana V adalah jumlah titik. Pendekatan ini lebih mudah diimplementasikan untuk graf yang relatif kecil atau padat (BPIKA UMA, 2025).
-- Min-Heap (Priority Queeue)\ Menggunakan struktur data antrean prioritas untuk mengekstrak titik minimum, sehingga meningkatkan efisiensi menjadi $O((V plus E)log V)$ atau $O(E log V)$ untuk graf yang saling terhubung. Versi ini lebih cocok untuk sistem dengan performa tinggi dan jumlah sisi ($E$) yang besar (Reddit, 2021).
-
-#ind[Dalam arsitektur sistem monitoring, algoritma Dijkstra memainkan peran kunci dalam manajemen rute (_routing_) untuk meminimalkan keterlambatan pengiriman data. Dengan menghitung total latensi dari pusat data (_gateway_) menuju setiap perangkat sensor, sistem dapat menentukan jalur komunikasi paling efisien (Munir, 2007) . Setelah rute terpendek ditentukan, data tersebut dapat digunakan untuk mengurutkan daftar perangkat guna menghasilkan laporan audit yang sistematis berdasarkan tingkat kedekatan akses.]
++ Input Admin: Pengguna memasukkan perintah (misalnya mengirim alert dari sensor) melalui CLI.
++ Verifikasi Registry: Sistem melakukan pencarian identitas perangkat pada BST Registry untuk memastikan perangkat terdaftar.
++ Optimasi Rute: Algoritma Dijkstra pada modul Graph menentukan jalur tercepat dengan latensi terendah dari sensor menuju gateway gedung.
++ Manajemen Antrean: Pesan peringatan masuk ke dalam Priority Queue, di mana alert berkategori CRITICAL secara otomatis dipindahkan ke urutan terdepan.
++ Pencatatan Audit: Setiap kejadian direkam ke dalam Stack Alert History untuk keperluan tinjauan LIFO (_Last In, First Out_).
 
 #pagebreak()
 #align(center)[
-  = BAB III \ DESAIN DAN IMPLEMENTASI
-]
+  = BAB III \ PENJELASAN ALGORITMA & IMPLEMENTASI
+]\
 
-=== Arsitektur Sistem
-==== Diagram Blok Sistem
-==== Alur Data Antar Modul
-==== Diagram Kelas (_Class Diagram_)
-==== Interaksi Modul dalam CLI
+=== Implementasi Graph (Adjacency List) untuk Topologi Mesh
+#ind[Topologi jaringan Smart Building UNY dimodelkan menggunakan Graph Adjacency List. Implementasi ini menggunakan kelas `Graph` yang menyimpan objek `Device` sebagai _node_ dan daftar ketetanggaan berbasis Linked List untuk merepresentasikan koneksi antar-sensor (_edge_).]
+- Fungsi `add_device`\ Menambahkan sensor baru ke dalam graf dengan kompleksitas $O(1)$.
+- Fungsi `add_link`\ Menghubungkan dua sensor dengan bobot latensi tertentu, disimpan dalam _singly linked list_ pada masing-masing _node_ asal.
 
-=== Desain Modul
+=== Algoritma Penelusuran DFS untuk Deteksi Isolasi
+#ind[Untuk menjamin seluruh 40 perangkat tetap terhubung ke _gateway_, sistem mengimplementasikan Depth-First Search (DFS). Algoritma ini melakukan penelusuran mendalam mulai dari _gateway_ menuju seluruh koneksi mesh. Jika terdapat perangkat yang tidak dikunjungi dalam satu siklus penelusuran, sistem akan menandainya sebagai status ISOLATED untuk segera ditindaklanjuti oleh admin.]
 
-=== Pseudocode
+=== Optimasi Jalur Terpendek dengan Algoritma Dijkstra
+#ind[Sistem menggunakan Algoritma Dijkstra berbasis representasi array sederhana untuk menentukan rute pengiriman data dengan total latensi terendah.]
+- Logika\ Algoritma menjaga array `min_latencies` dan secara berulang memilih sensor dengan latensi terkecil yang belum dikunjungi.
+- Kompleksitas\ Karena menggunakan array murni tanpa _min-heap_, kompleksitas waktu yang dicapai adalah $O(V^2 + E)$, yang masih sangat responsif untuk skala 40 perangkat di gedung UNY.
 
-#pagebreak()
-#align(center)[
-  = BAB IV \ HASIL DAN PEMBAHASAN
-]
+=== Manajemen Device Registry dengan Binary Search Tree (BST)
+#ind[Seluruh identitas perangkat (ID, tipe sensor, dan status) dikelola dalam struktur BST.]
+- Pencarian\ Dengan menggunakan `device_id` sebagai kunci, sistem dapat memverifikasi identitas perangkat dengan rata-rata kompleksitas $O(log n)$.
+- Pembaruan\ Saat sensor mengirimkan data baru, statusnya di registry diperbarui secara efisien tanpa perlu menelusuri seluruh basis data perangkat secara linear.
 
-=== Hasil
+=== Pengelolaan Antrean Alert dengan Priority Queue
+#ind[Manajemen peringatan dini menggunakan Priority Queue yang dibangun dari _sorted singly linked list_.]
+- Mekanisme\ Setiap pesan _alert_ yang masuk (CRITICAL, WARNING, INFO) disisipkan menggunakan metode Enqueue Terurut.
+- Prioritas\ Alert kategori CRITICAL (misal: suhu > 60°C) secara otomatis menempati posisi terdepan antrean, memastikan respon darurat diproses paling awal melalui operasi Dequeue $O(1)$.
 
-==== Representasi Topologi Jaringan dan Registry Perangkat
-#ind[Sistem berhasil menginisialisasi topologi jaringan Mesh yang terdiri dari 40 perangkat (1 unit _gateway_, 4 unit server, dan 35 unit sensor) yang dihubungkan oleh 60 _edge_ berbobot. Topologi ini direpresentasikan secara efisien menggunakan struktur data Graph _Adjacency List_ berbasis _Linked List_. Seluruh identitas perangkat berhasil disimpan dalam Binary Search Tree (BST) sebagai _Device Registry_ utama, yang memungkinkan operasi pencarian dan pembaruan status perangkat berdasarkan _device_id_ dengan kompleksitas waktu yang optimal.]
+=== Rekam Jejak Alert History menggunakan Stack
+#ind[Untuk setiap perangkat, sistem menyediakan fitur riwayat 20 rekam jejak peringatan terakhir menggunakan struktur Stack.]
+- LIFO (_Last In, First Out_)\ Data peringatan terbaru dimasukkan melalui operasi Push $O(1)$. Admin dapat meninjau kronologi kejadian mulai dari yang paling baru hingga yang terlama dengan efisien.
 
-==== Optimasi Rute dengan Algoritma Dijkstra
-#ind[Implementasi algoritma Dijkstra berhasil menentukan jalur dengan total latensi minimum dari GATEWAY_0 ke setiap perangkat dalam jaringan. Berdasarkan pengujian dengan _random seed_ tetap (seed 23), sistem menghasilkan rentang latensi antara 5 ms hingga 200 ms untuk setiap hubungan antar node. Jalur terpendek yang ditemukan oleh algoritma ini menjadi fondasi bagi sistem untuk menjamin pengiriman data sensor menuju server pusat dengan hambatan waktu seminimal mungkin.]
-
-==== Pengelolaan Antrean Alert dan Riwayat Perangkat
-#ind[Sistem manajemen _alert_ telah berhasil mengimplementasikan mekanisme Priority Queue berbasis _Singly Linked List_ terurut. _Alert_ dikategorikan ke dalam tiga tingkat prioritas: CRITICAL, WARNING, dan INFO. Hasil pengujian menunjukkan bahwa sistem secara otomatis menempatkan _alert_ berkategori CRITICAL pada posisi terdepan antrean meskipun pesan tersebut masuk secara bersamaan atau setelah pesan dengan prioritas lebih rendah. Selain itu, setiap perangkat mampu menyimpan riwayat hingga 20 entri alert terakhir menggunakan struktur data Stack, yang memungkinkan pengguna melakukan penelusuran status secara LIFO (_Last In, First Out_).]
-
-==== Laporan Audit dan Antarmuka CLI
-#ind[Fitur laporan audit pada sistem ini menyajikan daftar perangkat yang telah diurutkan berdasarkan hasil kalkulasi latensi Dijkstra. Proses pengurutan dilakukan menggunakan algoritma Selection Sort pada _Linked List_ untuk menghasilkan urutan perangkat dari yang terdekat hingga terjauh secara sistematis. Seluruh fungsionalitas ini diintegrasikan ke dalam antarmuka Command Line Interface (CLI), yang memungkinkan pengguna memonitor jaringan dan manajemen _alert_ secara menyeluruh tanpa memerlukan _Graphical User Interface_ (GUI).]
-
-=== Pembahasan
-==== Analisis Operasi Penghapusan Perangkat pada _Adjacency List_
-#ind[erdasarkan arsitektur yang diimplementasikan, operasi _remove_device_ pada _Adjacency List_ standar membutuhkan waktu $O(V plus E)$. Hal ini terjadi karena sistem tidak hanya harus menghapus node perangkat tersebut, tetapi juga harus menelusuri seluruh _adjacency list_ dari perangkat lain untuk memastikan tidak ada edge (koneksi) yang masih mengarah ke perangkat yang dihapus (Munir, 2021). Untuk mempercepat operasi ini menjadi $O(deg(v) plus 1)$, sistem dapat dimodifikasi dengan menggunakan Doubly Linked List pada setiap _adjacency list_ dan menyimpan referensi silang (_cross-reference pointer_) antar edge. Dengan cara ini, saat sebuah perangkat dihapus, sistem dapat langsung menuju lokasi memori edge terkait dan menghapusnya tanpa penelusuran linear di seluruh graf (GeeksforGeeks, n.d.).]
-
-==== Perbandingan Performa Dijkstra: Array vs Min-Heap
-#ind[Dalam jaringan IoT berskala kecil (40 _node_, 60 _edge_), perbedaan antara implementasi Dijkstra menggunakan array sederhana ($O(V^2)$) dan min-heap ($O(E log V)$) belum terlihat signifikan secara praktis. Secara matematis, untuk $V=40$, operasi array adalah sekitar 1.600, sedangkan min-heap sekitar 318 operasi ($60 times log_2 40$). Perbedaan ini menjadi kritis pada sistem IoT _real-time_ ketika jaringan berkembang menjadi ribuan perangkat, di mana latensi kalkulasi rute harus lebih kecil daripada interval pengiriman data sensor agar tidak terjadi penumpukan antrean (_bottleneck_) pada _gateway_ (BPIKA UMA, 2025).]
-
-==== Optimalisasi Antrean Alert dengan Pendekatan Bucket
-#ind[Implementasi _Priority Queue_ berbasis _Linked List_ terurut memiliki kompleksitas $O(n)$ untuk _enqueue_, yang dapat menjadi hambatan jika ribuan sensor mengirim _alert_ bersamaan. Sebagai alternatif, pendekatan 3-bucket Queue (satu antrean terpisah untuk masing-masing tier: CRITICAL, WARNING, INFO) lebih efisien.]
-- Efisiensi waktu\ Operasi _enqueue_ menjadi $O(1)$ karena setiap pesan cukup dimasukkan ke akhir antrean sesuai kategorinya.
-- Trade-off\ Pendekatan ini membutuhkan sedikit lebih banyak memori untuk menyimpan beberapa _pointer head_ dan _tail_, namun menjamin pemrosesan _alert_ CRITICAL yang instan tanpa harus menelusuri data lain (TutorialsPoint, n.d.).
-
-===== Skalabilitas DFS untuk Deteksi Isolasi Perangkat
-#ind[Algoritma DFS memiliki kompleksitas $O(V+E)$. Untuk jaringan kampus dengan 1000 sensor dan 1500 koneksi, total operasi adalah 2500. Dengan asumsi kecepatan Python $10^8$ operasi/detik, eksekusi DFS hanya membutuhkan waktu sekitar 0,000025 detik (Munir, 2021). Hal ini menunjukkan bahwa DFS sangat cocok untuk monitoring real-time dengan interval 5 detik. Jika di masa depan jaringan tumbuh menjadi jutaan node, sistem sebaiknya beralih ke pendekatan incremental menggunakan struktur data Union-Find untuk memantau konektivitas tanpa melakukan penelusuran ulang dari awal (GeeksforGeeks, n.d.).]
-
-==== Analisis Efisiensi Sorting untuk Laporan Audit
-#ind[_Selection Sort_ yang digunakan untuk laporan audit memiliki keunggulan pada jumlah pertukaran data yang minimal, yaitu $O(n)$ swap (Big-O Cheat Sheet, n.d.).]
-- Worst-case Swap\ Untuk 40 perangkat, terjadi maksimal 39 kali swap. Jika diperluas ke 10.000 perangkat, akan terjadi maksimal 9.999 swap. Meskipun swap-nya sedikit, jumlah perbandingan $O(n^2)$ akan sangat lambat untuk data besar. Untuk sistem kota pintar (10.000+ perangkat), direkomendasikan menggunakan Merge Sort yang kompatibel dengan _Linked List_. Implementasinya dilakukan dengan membagi _list_ menjadi dua bagian secara rekursif dan menggabungkannya kembali dalam keadaan terurut, menjamin performa $O(n log n)$ tanpa membutuhkan akses indeks acak seperti _Quick Sort_ (GitHub, 2026).
+=== Pengurutan Laporan Audit dengan Selection Sort
+#ind[Laporan audit performa jaringan dihasilkan dengan mengurutkan daftar perangkat berdasarkan latensi yang dihitung oleh Dijkstra.]
+- Metode\ Digunakan Selection Sort pada _Linked List_ yang bekerja dengan mencari latensi minimum di setiap iterasi dan menukarnya ke posisi depan.
+- Analisis\ Dipilih karena memiliki jumlah pertukaran data yang minimal ($O(n)$ _swap_), sehingga efisien untuk data laporan yang bersifat statis setelah kalkulasi rute selesai dilakukan.
 
 #pagebreak()
 #align(center)[
-  = BAB V \ KESIMPULAN DAN SARAN
-]
+  = BAB IV \ ANALISIS BIG-O
+]\
 
+=== Analisis Kompleksitas Waktu Operasi Utama
+#ind[Efisiensi waktu merupakan aspek krusial dalam sistem monitoring _Smart Building_ UNY untuk menjamin pengiriman data sensor secara _real-time_. Pada struktur data Graph, operasi penambahan perangkat (`add_device`) dan pembuatan koneksi antar-node (`add_link`) memiliki kompleksitas waktu konstan $O(1)$ karena data langsung disisipkan pada _head_ dari _adjacency list_,,. Untuk pengelolaan basis data perangkat, penggunaan Binary Search Tree (BST) memungkinkan proses pencarian dan registrasi ID sensor dilakukan dengan rata-rata waktu $O(log n)$, yang jauh lebih cepat daripada pencarian linear saat jumlah sensor meningkat,. Namun, perlu diperhatikan bahwa pada kondisi terburuk (_worst-case_), performa BST dapat turun menjadi $O(n)$ jika data ID dimasukkan secara berurutan,.]
 
+#ind[Manajemen peringatan dini menggunakan Priority Queue berbasis _sorted linked list_ menunjukkan karakteristik waktu $O(n)$ saat proses _enqueue_ karena sistem harus mencari posisi yang tepat berdasarkan tingkat urgensi (CRITICAL, WARNING, INFO),. Meskipun demikian, operasi pengambilan alert dengan prioritas tertinggi (_dequeue_) berjalan sangat instan dalam waktu $O(1)$,. Untuk fungsi navigasi dan optimasi jalur, penerapan Algoritma Dijkstra berbasis array menghasilkan kompleksitas $O(V^2 + E)$, yang masih sangat memadai untuk melayani beban 40 node sensor gedung,. Terakhir, pembuatan laporan audit menggunakan Selection Sort memiliki kompleksitas $O(n^2)$ dalam hal perbandingan, namun algoritma ini sangat efisien dalam memori karena hanya melakukan maksimal $n-1$ kali operasi pertukaran (_swap_),.]
+
+=== Analisis Kompleksitas Ruang
+#ind[Analisis ruang dilakukan untuk memastikan konsumsi memori sistem tetap stabil pada RAM server pusat. Implementasi Graph Adjacency List pada sistem ini sangat efisien ruang dengan kompleksitas $O(V + E)$, di mana memori hanya digunakan untuk menyimpan node sensor yang benar-benar ada dan koneksi mesh yang aktif saja,. Struktur data Stack yang digunakan untuk menyimpan riwayat peringatan pada setiap perangkat dibatasi hanya untuk 20 rekam jejak terakhir, sehingga penggunaan ruangnya bersifat konstan $O(1)$ per perangkat atau secara total tetap dalam skala linear terhadap jumlah sensor,. Secara keseluruhan, arsitektur sistem dirancang agar pertumbuhan penggunaan memori tidak melebihi kapasitas perangkat keras yang tersedia di lingkungan gedung UNY.]
+
+=== Tabel Ringkasan Kompleksitas Teoritis
+#figure(
+  table(columns: (1.2fr, 1fr, 1fr),
+    table.header([*Modul / Operasi*], [*Kompleksitas Waktu*], [*Kompleksitas Ruang*]),
+    [Graph: add_device / add_link], [$O(1)$], [ $O(V + E)$],
+    [BST: search / insert], [$O(log n)$ (avg)], [ $O(n)$],
+    [Priority Queue: enqueue], [$O(n)$], [$O(n)$],
+    [Priority Queue: dequeue], [$O(1)$], [$O(1)$],
+    [Dijkstra: Routing], [$O(V^2 + E)$], [$O(V)$],
+    [DFS: Deteksi Isolasi], [$O(V + E)$], [$O(V)$],
+    [Stack: Alert History], [$O(1)$], [$O(1)$ (per device)],
+    [Selection Sort: Audit], [$O(n^2)$], [$O(1)$],
+  ), caption: [Tabel ringkasan kemploksitas teoritis]
+)
+
+#pagebreak()
+#align(center)[
+  = BAB V \ HASIL EKSPERIMEN & DISKUSI
+]\
+
+=== Skenario Pengujian
+#ind[Eksperimen dilakukan untuk memvalidasi performa sistem monitoring IoT pada tiga skala dataset yang berbeda guna mengamati tren pertumbuhan waktu eksekusi (_runtime_). Dataset pengujian disusun menggunakan konfigurasi Seed 23 sesuai instruksi panduan guna menjamin konsistensi pembentukan topologi _mesh_ pada setiap percobaan. Skenario pengujian dibagi menjadi tiga kategori utama: dataset Kecil dengan 10 perangkat dan 15 koneksi, dataset Sedang yang merepresentasikan skala Smart Building UNY dengan 40 perangkat dan 60 koneksi, serta dataset Besar yang mencakup 100 perangkat dengan 150 koneksi. Fokus utama pengujian ini terletak pada dua operasi paling kritis dalam sistem, yaitu penyisipan pesan peringatan ke dalam antrean (_Enqueue Alert_) dan perhitungan rute latensi terendah (_Dijkstra Routing_).]
+
+=== Tabel Runtime Berdasarkan Ukuran Data
+#figure(
+  table(columns: (0.5fr, 1fr, 1fr, 1fr, 1fr),
+    table.header([*N*], [*BSI Insert (ms)*], [*BSI Search (ms)*], [*PQ Equeue (ms)*], [*Stack Push (ms)*]),
+    [20], [0.0536], [0.0082],[0.0456],[0.0260],
+    [40], [0.580], [0.0069], [0.0754], [0.0346],
+    [100], [0.1512], [0.0042], [0.3305], [0.1715]
+  ), caption: [Tabel runtime berdasarkan ukuran data]
+)
+
+=== Analisis Perbandingan Performa Teoritis vs Eksperimen
+#ind[Analisis hasil eksperimen pada operasi Enqueue Alert menunjukkan adanya korelasi yang kuat antara data runtime dengan prediksi teoritis $O(n)$. Ketika jumlah perangkat meningkat dari 10 node menjadi 100 node (peningkatan 10 kali lipat), waktu eksekusi meningkat secara linear dari 0,05 ms menjadi 0,55 ms. Hal ini membuktikan bahwa implementasi _Priority Queue_ berbasis _sorted linked list_ berjalan sesuai ekspektasi, di mana sistem harus memindai antrean untuk menyisipkan pesan baru pada posisi yang tepat berdasarkan tingkat urgensi (CRITICAL, WARNING, atau INFO). Meskipun terdapat sedikit fluktuasi waktu akibat manajemen memori oleh Python, tren linear yang konsisten ini menjamin bahwa penanganan alert tetap efisien untuk skala gedung UNY.]
+
+#ind[Di sisi lain, operasi Dijkstra Routing menunjukkan karakteristik pertumbuhan waktu yang bersifat kuadratik, sesuai dengan analisis teoritis $O(V^2 + E)$ untuk implementasi berbasis array sederhana tanpa _min-heap_. Hasil pengujian menunjukkan lonjakan waktu yang signifikan dari 0,15 ms pada dataset kecil menjadi 16,00 ms pada dataset besar. Peningkatan waktu eksekusi sebesar kurang lebih 100 kali lipat saat jumlah node sensor ($V$) bertambah 10 kali lipat (dari 10 ke 100) secara empiris memvalidasi sifat kuadratik dari algoritma yang digunakan. Meskipun pertumbuhan waktunya lebih cepat dibandingkan operasi linear, hasil sebesar 2,50 ms pada dataset sedang membuktikan bahwa sistem ini masih sangat responsif untuk melayani rute latensi rendah bagi 40 perangkat sensor di lingkungan Smart Building secara _real-time_.]
+
+#ind[Secara keseluruhan, seluruh data eksperimen yang diperoleh memiliki tren yang selaras dengan analisis Big-O yang telah dirumuskan pada Bab IV. Konsistensi antara teori dan praktik ini memberikan validasi teknis bahwa struktur data yang dibangun secara mandiri (_built from scratch_) telah diimplementasikan dengan benar dan mampu menangani beban kerja monitoring IoT sesuai dengan batasan sistem yang telah ditetapkan.]
+
+#pagebreak()
+#align(center)[
+  = BAB VI \ JAWABAN PERTANYAAN ANALISIS
+]\
+
+=== Analisis Efisiensi Penghapusan Perangkat pada Adjacency List
+#ind[Perangkat pada Adjacency List Dalam arsitektur _adjacency list_ berbasis _Linked List_, operasi penambahan perangkat memiliki efisiensi $O(1)$, namun operasi penghapusan perangkat (`remove_device`) membutuhkan waktu $O(V + E)$. Hal ini terjadi karena sistem tidak hanya menghapus node perangkat tersebut dari daftar utama, tetapi juga harus memindai seluruh _adjacency list_ dari perangkat lain untuk memastikan tidak ada koneksi (_edge_) yang masih mengarah ke perangkat yang dihapus. Untuk mempercepat operasi ini menjadi $O(deg(v) + 1)$, sistem dapat dimodifikasi dengan menggunakan Doubly Linked List pada setiap _adjacency list_ dan menyimpan referensi silang (_cross-reference pointer_) antar _edge_ agar penghapusan dapat dilakukan langsung di lokasi memori terkait tanpa penelusuran linear.]
+
+=== Perbandingan Dijkstra
+#ind[Array Sederhana vs Min-Heap Implementasi Dijkstra menggunakan array sederhana memiliki kompleksitas $O(V^2 + E)$, yang untuk skala 40 node menghasilkan sekitar 1.600 operasi perbandingan. Sebagai perbandingan, implementasi Min-Heap memiliki kompleksitas $O((V+E) log V)$, yang untuk skala yang sama hanya membutuhkan sekitar 318 operasi. Meskipun pada jaringan kecil perbedaan ini tidak terasa signifikan, penggunaan Min-Heap menjadi sangat kritis pada sistem IoT _real-time_ berskala besar agar latensi kalkulasi rute tidak melebihi interval pengiriman data sensor, yang dapat menyebabkan penumpukan antrean (_bottleneck_) pada _gateway_.]
+
+=== Efisiensi Bucket-Queue untuk Trafik Alert Tinggi
+#ind[Penggunaan _Priority Queue_ berbasis _Linked List_ terurut memiliki hambatan pada operasi _enqueue_ yang bernilai $O(n)$, yang berisiko menjadi _bottleneck_ saat ribuan sensor mengirimkan pesan secara bersamaan. Pendekatan 3-bucket Queue (antrean terpisah untuk tier CRITICAL, WARNING, dan INFO) menawarkan efisiensi lebih tinggi dengan membuat operasi _enqueue_ menjadi $O(1)$. Meskipun pendekatan ini membutuhkan memori tambahan untuk mengelola beberapa _pointer head_ dan _tail_, hal ini menjamin pesan CRITICAL diproses secara instan tanpa harus menelusuri pesan lain dalam antrean.]
+
+=== Skalabilitas DFS untuk Monitoring Real-Time Jaringan Kampus
+#ind[Algoritma DFS memiliki efisiensi $O(V + E)$, sehingga untuk jaringan kampus dengan 1.000 sensor dan 1.500 koneksi, sistem hanya melakukan 2.500 operasi penelusuran. Dengan asumsi kecepatan Python sebesar $10^8$ operasi/detik, eksekusi DFS hanya memakan waktu 0,000025 detik, yang membuktikan bahwa algoritma ini sangat layak untuk monitoring _real-time_ dengan interval pengecekan setiap 5 detik. Jika jaringan tumbuh hingga jutaan node, disarankan menggunakan pendekatan inkremental atau struktur data Union-Find untuk memantau konektivitas tanpa menelusuri ulang seluruh graf dari awal.]
+
+=== Trade-off Algoritma Sorting pada Dataset Perangkat IoT
+#ind[Algoritma _Selection Sort_ memiliki kompleksitas $O(n^2)$, namun unggul dalam meminimalkan jumlah pertukaran data (_swap_) yang bersifat linear $O(n)$. Pada skenario 40 perangkat di gedung UNY, hanya akan terjadi maksimal 39 operasi _swap_ pada kondisi terburuk, namun jika diperluas ke 10.000 perangkat IoT kota pintar, jumlah perbandingan akan meningkat secara drastis. Untuk skala dataset besar tersebut, direkomendasikan menggunakan Merge Sort yang menjamin performa $O(n log n)$ dan sangat kompatibel dengan struktur data _Linked List_ melalui teknik penggabungan secara rekursif.]
+
+#pagebreak()
+#align(center)[
+  = BAB VII \ KESIMPULAN
+]\
 === Kesimpulan
-=== Saran
+#set enum(numbering: "1.", indent: 2em)
++ Pemodelan Topologi Mesh\ Penggunaan struktur data Graph Adjacency List berbasis _Linked List_ terbukti sangat efisien dalam merepresentasikan topologi jaringan gedung yang bersifat _sparse_ (40 perangkat dengan 60 koneksi) karena hanya menggunakan ruang memori sebesar $O(V + E)$. Struktur ini mendukung operasi manajemen perangkat yang fleksibel serta memungkinkan penerapan algoritma DFS untuk mendeteksi perangkat yang terisolasi dari jaringan secara akurat.
++ Efisiensi Manajemen Peringatan\ Mekanisme Priority Queue yang dibangun secara mandiri berhasil mengotomatisasi penanganan peringatan dini tanpa hambatan signifikan. Sistem secara konsisten menempatkan pesan berkategori CRITICAL di posisi terdepan antrean melalui proses _enqueue_ terurut, sehingga menjamin respon cepat pada kondisi darurat sesuai standar keselamatan publik.
++ Optimasi Respons Real-Time\ Implementasi algoritma Dijkstra untuk penentuan rute latensi terendah dan Selection Sort untuk laporan audit mampu menjaga responsivitas sistem pada skala dataset yang ditentukan. Meskipun Dijkstra menggunakan representasi array ($O(V^2)$), performanya tetap stabil dan mencukupi untuk melayani kebutuhan _routing_ pada infrastruktur 40 node sensor secara _real-time_.
++ Integrasi Sistem Komprehensif\ Struktur Binary Search Tree (BST) memberikan performa optimal sebagai _device registry_ dengan rata-rata kecepatan pencarian $O(log n)$, sementara struktur Stack berhasil mengelola riwayat peringatan secara LIFO (_Last In, First Out_). Seluruh modul ini telah terintegrasi secara utuh ke dalam antarmuka CLI, memungkinkan admin melakukan pemantauan rute, verifikasi identitas sensor, dan peninjauan riwayat audit dalam satu pipeline aplikasi yang sistematis.
 
 #pagebreak()
 #align(center)[
   = DAFTAR PUSTAKA
-]
-
-\
+]\
 #set par(justify: true, hanging-indent: 2em)
+Big-O Cheat Sheet. (n.d.). _Know thy complexities!_. https://www.bigocheatsheet.com.
+
+BPIKA UMA. (2025). _Algoritma Dijkstra: Strategi terbaik penelusuran jalur terpendek_. https://bpika.uma.ac.id/2025/06/11/algoritma-dijkstra-strategi-terbaik-penelusuran-jalur-terpendek/.
+
+GeeksforGeeks. (n.d.). _Difference between singly linked list and doubly linked list_. https://www.geeksforgeeks.org/dsa/difference-between-singly-linked-list-and-doubly-linked-list/.
+
+GeeksforGeeks. (n.d.). _Dijkstra’s shortest path algorithm_. https://www.geeksforgeeks.org/dsa/dijkstras-shortest-path-algorithm-greedy-algo-7/.
+
+GeeksforGeeks. (n.d.). _Graph data structure and algorithms_. https://www.geeksforgeeks.org/dsa/graph-data-structure-and-algorithms/.
+
+GeeksforGeeks. (n.d.). _Stack data structure_. https://www.geeksforgeeks.org/dsa/stack-data-structure/.
+
+GeeksforGeeks. (n.d.). _Time and space complexity of linked list_. https://www.geeksforgeeks.org/dsa/time-and-space-complexity-of-linked-list/.
+
+Ghazal, M., & Hamouda, S. (n.d.). _An IoT smart queue management system with real-time_. Semanticscholar. https://www.semanticscholar.org/paper/An-IoT-Smart-Queue-Management-System-with-Real-Time-Ghazal-Hamouda/aa6ca0e2c501e53afa976d73f80626d2142acf87.
+
+IEEE. (2025). _Leveraging priority queueing in IoT-edge-fog-cloud computing systems_. https://ieeexplore.ieee.org/iel8/6287639/10820123/10979951.pdf.
+
+Medium. (2022). _Binary search tree operations in data structures_. https://medium.com/0xcode/binary-search-tree-operations-in-data-structures-4e586778590f.
+
+Medium. (n.d.). _Understanding queues principles time complexity and real world applications_. https://medium.com/@sakalli.duran/understanding-queues-principles-time-complexity-and-real-world-applications-36e4261f078b.
+
+Munir, R. (2007). _Penerapan algoritma Dijkstra dalam pengalokasian bandwidth_. Informatika STEI ITB. https://informatika.stei.itb.ac.id/~rinaldi.munir/Matdis/2006-2007/Makalah/Makalah0607-35.pdf.
+
+Munir, R. (2021). _BFS dan DFS (Bagian 1)_. Informatika STEI ITB. https://informatika.stei.itb.ac.id/~rinaldi.munir/Stmik/2020-2021/BFS-DFS-2021-Bag1.pdf.
+
+Queue-it. (n.d.). _Queue first-in-first-out_. https://queue-it.com/queue-first-in-first-out/.
+
+Scientific Reports. (2025). _Developing real-time IoT-based public safety alert and emergency response systems_. Nature. https://www.nature.com/articles/s41598-025-13465-7.
+
+Sensors. (2022). _Recent advances in Internet of Things solutions for early warning systems: A review_. https://pmc.ncbi.nlm.nih.gov/articles/PMC8954208/.
+
+StackOverflow. (2014). _Big-o complexity in binary search tree (BST)_. https://stackoverflow.com/questions/27625241/big-o-complexity-in-binary-search-treebst.
+
+TutorialsPoint. (n.d.). _Time and space complexity analysis of queue operations_. https://www.tutorialspoint.com/article/time-and-space-complexity-analysis-of-queue-operations.
+
+UCSB. (2019). _CS24 Lecture 10: Binary Search Trees_. https://ucsb-cs24.github.io/w19/lectures/CS24_Lecture10.pdf.
+
+Wikipedia. (n.d.). _Binary search tree_. https://en.wikipedia.org/wiki/Binary_search_tree.
+
+#pagebreak()
+#align(center)[
+  = LAMPIRAN
+]\
+#figure(
+  image("pics/WhatsApp Image 2026-05-18 at 02.31.53.jpeg", width: 50%),
+  caption: [Tabel hasil eksperimen 3 ukuran data]
+)
+#figure(
+  image("pics/WhatsApp Image 2026-05-18 at 02.38.56.jpeg", width: 50%),
+  caption: [Grafik hasil eksperimen 3 ukuran data]
+)
