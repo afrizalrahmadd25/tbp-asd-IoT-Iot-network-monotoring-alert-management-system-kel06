@@ -2,7 +2,7 @@ import numpy as np
 import random
 from data_structures import graph
 from modules.Routing import dijkstra_latensi, selection_sort_latency
-from modules.network_audit import detect_isolated_devices
+from modules import detect_isolated_devices
 
 # Inisialisasi Seed sesuai panduan agar reproduksibel [14]
 np.random.seed(23)
