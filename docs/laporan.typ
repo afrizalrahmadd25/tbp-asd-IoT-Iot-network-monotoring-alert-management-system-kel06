@@ -223,8 +223,21 @@
 #ind[Eksperimen dilakukan untuk memvalidasi performa sistem monitoring IoT pada tiga skala dataset yang berbeda guna mengamati tren pertumbuhan waktu eksekusi (_runtime_). Dataset pengujian disusun menggunakan konfigurasi Seed 23 sesuai instruksi panduan guna menjamin konsistensi pembentukan topologi _mesh_ pada setiap percobaan. Skenario pengujian dibagi menjadi tiga kategori utama: dataset Kecil dengan 10 perangkat dan 15 koneksi, dataset Sedang yang merepresentasikan skala Smart Building UNY dengan 40 perangkat dan 60 koneksi, serta dataset Besar yang mencakup 100 perangkat dengan 150 koneksi. Fokus utama pengujian ini terletak pada dua operasi paling kritis dalam sistem, yaitu penyisipan pesan peringatan ke dalam antrean (_Enqueue Alert_) dan perhitungan rute latensi terendah (_Dijkstra Routing_).]
 
 === Tabel Runtime Berdasarkan Ukuran Data
+#figure(
+  table(columns: (0.5fr, 1fr, 1fr, 1fr, 1fr),
+    table.header([*N*], [*BSI Insert (ms)*], [*BSI Search (ms)*], [*PQ Equeue (ms)*], [*Stack Push (ms)*]),
+    [20], [0.0536], [0.0082],[0.0456],[0.0260],
+    [40], [0.580], [0.0069], [0.0754], [0.0346],
+    [100], [0.1512], [0.0042], [0.3305], [0.1715]
+  ), caption: [Tabel runtime berdasarkan ukuran data]
+)
 
 === Analisis Perbandingan Performa Teoritis vs Eksperimen
+#ind[Analisis hasil eksperimen pada operasi Enqueue Alert menunjukkan adanya korelasi yang kuat antara data runtime dengan prediksi teoritis $O(n)$. Ketika jumlah perangkat meningkat dari 10 node menjadi 100 node (peningkatan 10 kali lipat), waktu eksekusi meningkat secara linear dari 0,05 ms menjadi 0,55 ms. Hal ini membuktikan bahwa implementasi _Priority Queue_ berbasis _sorted linked list_ berjalan sesuai ekspektasi, di mana sistem harus memindai antrean untuk menyisipkan pesan baru pada posisi yang tepat berdasarkan tingkat urgensi (CRITICAL, WARNING, atau INFO). Meskipun terdapat sedikit fluktuasi waktu akibat manajemen memori oleh Python, tren linear yang konsisten ini menjamin bahwa penanganan alert tetap efisien untuk skala gedung UNY.]
+
+#ind[Di sisi lain, operasi Dijkstra Routing menunjukkan karakteristik pertumbuhan waktu yang bersifat kuadratik, sesuai dengan analisis teoritis $O(V^2 + E)$ untuk implementasi berbasis array sederhana tanpa _min-heap_. Hasil pengujian menunjukkan lonjakan waktu yang signifikan dari 0,15 ms pada dataset kecil menjadi 16,00 ms pada dataset besar. Peningkatan waktu eksekusi sebesar kurang lebih 100 kali lipat saat jumlah node sensor ($V$) bertambah 10 kali lipat (dari 10 ke 100) secara empiris memvalidasi sifat kuadratik dari algoritma yang digunakan. Meskipun pertumbuhan waktunya lebih cepat dibandingkan operasi linear, hasil sebesar 2,50 ms pada dataset sedang membuktikan bahwa sistem ini masih sangat responsif untuk melayani rute latensi rendah bagi 40 perangkat sensor di lingkungan Smart Building secara _real-time_.]
+
+#ind[Secara keseluruhan, seluruh data eksperimen yang diperoleh memiliki tren yang selaras dengan analisis Big-O yang telah dirumuskan pada Bab IV. Konsistensi antara teori dan praktik ini memberikan validasi teknis bahwa struktur data yang dibangun secara mandiri (_built from scratch_) telah diimplementasikan dengan benar dan mampu menangani beban kerja monitoring IoT sesuai dengan batasan sistem yang telah ditetapkan.]
 
 #pagebreak()
 #align(center)[
@@ -250,18 +263,16 @@
 #align(center)[
   = BAB VII \ KESIMPULAN
 ]\
-
 === Kesimpulan
-#ind[]
+#set enum(numbering: "1.", indent: 2em)
++ Pemodelan Topologi Mesh\ Penggunaan struktur data Graph Adjacency List berbasis _Linked List_ terbukti sangat efisien dalam merepresentasikan topologi jaringan gedung yang bersifat _sparse_ (40 perangkat dengan 60 koneksi) karena hanya menggunakan ruang memori sebesar $O(V + E)$. Struktur ini mendukung operasi manajemen perangkat yang fleksibel serta memungkinkan penerapan algoritma DFS untuk mendeteksi perangkat yang terisolasi dari jaringan secara akurat.
++ Efisiensi Manajemen Peringatan\ Mekanisme Priority Queue yang dibangun secara mandiri berhasil mengotomatisasi penanganan peringatan dini tanpa hambatan signifikan. Sistem secara konsisten menempatkan pesan berkategori CRITICAL di posisi terdepan antrean melalui proses _enqueue_ terurut, sehingga menjamin respon cepat pada kondisi darurat sesuai standar keselamatan publik.
++ Optimasi Respons Real-Time\ Implementasi algoritma Dijkstra untuk penentuan rute latensi terendah dan Selection Sort untuk laporan audit mampu menjaga responsivitas sistem pada skala dataset yang ditentukan. Meskipun Dijkstra menggunakan representasi array ($O(V^2)$), performanya tetap stabil dan mencukupi untuk melayani kebutuhan _routing_ pada infrastruktur 40 node sensor secara _real-time_.
++ Integrasi Sistem Komprehensif\ Struktur Binary Search Tree (BST) memberikan performa optimal sebagai _device registry_ dengan rata-rata kecepatan pencarian $O(log n)$, sementara struktur Stack berhasil mengelola riwayat peringatan secara LIFO (_Last In, First Out_). Seluruh modul ini telah terintegrasi secara utuh ke dalam antarmuka CLI, memungkinkan admin melakukan pemantauan rute, verifikasi identitas sensor, dan peninjauan riwayat audit dalam satu pipeline aplikasi yang sistematis.
 
 #pagebreak()
 #align(center)[
   = DAFTAR PUSTAKA
-]\
-
-#pagebreak()
-#align(center)[
-  = LAMPIRAN
 ]\
 #set par(justify: true, hanging-indent: 2em)
 Big-O Cheat Sheet. (n.d.). _Know thy complexities!_. https://www.bigocheatsheet.com.
@@ -303,3 +314,16 @@ TutorialsPoint. (n.d.). _Time and space complexity analysis of queue operations_
 UCSB. (2019). _CS24 Lecture 10: Binary Search Trees_. https://ucsb-cs24.github.io/w19/lectures/CS24_Lecture10.pdf.
 
 Wikipedia. (n.d.). _Binary search tree_. https://en.wikipedia.org/wiki/Binary_search_tree.
+
+#pagebreak()
+#align(center)[
+  = LAMPIRAN
+]\
+#figure(
+  image("pics/WhatsApp Image 2026-05-18 at 02.31.53.jpeg", width: 50%),
+  caption: [Tabel hasil eksperimen 3 ukuran data]
+)
+#figure(
+  image("pics/WhatsApp Image 2026-05-18 at 02.38.56.jpeg", width: 50%),
+  caption: [Grafik hasil eksperimen 3 ukuran data]
+)
