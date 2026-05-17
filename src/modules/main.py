@@ -2,7 +2,6 @@ import numpy as np
 import time
 import random
 from typing import Optional, Dict, List, Tuple
-
 from data_structures.graph import IoTGraph, Device, Alert
 from data_structures.priority_queue import AlertPriorityQueue
 from data_structures.bst_registry import BSTRegistry
@@ -18,7 +17,7 @@ def main():
     alert_counter = 0
 
     # Generator data awal menggunakan seed 23 untuk reproducibility [2, 3]
-    from modules.generator import generate_iot_network
+    from generator import generate_iot_network
     devices, edges = generate_iot_network(40, 20, seed=23)
 
     # Memasukkan data awal ke dalam struktur data [1]
