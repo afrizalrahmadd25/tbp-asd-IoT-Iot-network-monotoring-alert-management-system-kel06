@@ -61,6 +61,7 @@
 #let ind(body) = par(justify: true, first-line-indent: (amount: 2em, all: true))[#body]
 
 #show list.item: set par(justify: true)
+#set list(indent: 2em, body-indent: 1em, marker: ([•], [◦], [▪], [▫]))
 
 #align(center)[
   #text(16pt)[
@@ -151,7 +152,10 @@
 #ind[
   Secara umum, efisiensi operasi pada linked list adalah sebagai berikut:
 ]
-#list(indent: 2em)[Akses atau pencaarian elemen, $O(n)$ karena sistem harus menelusuri node satu per satu dari awal (TutorialsPoint, n.d.).][Penyisipan (_insert_) di depan, $O(1)$ (GeeksforGeeks, n.d.).][Penyisipan (_insert_) di belakang, $O(1)$ jika menggunakan pointer tail, namun menjadi $O(n)$ jika harus menelusuri dari awal hingga akhir (GeeksforGeeks, n.d.).][Penghapusan (_delete_) node tertentu, $O(n)$, karena biasanya diperlukan pencarian node target terlebih dahulu (TutorialsPoint, n.d.).][Penelusuran (_traversal_), $O(n)$ untuk mengunjungi seluruh node (GeeksforGeeks, n.d.).]
+- Akses atau pencaarian elemen, $O(n)$ karena sistem harus menelusuri node satu per satu dari awal (TutorialsPoint, n.d.).
+- Penyisipan (_insert_) di depan, $O(1)$ (GeeksforGeeks, n.d.).- Penyisipan (_insert_) di belakang, $O(1)$ jika menggunakan pointer tail, namun menjadi $O(n)$ jika harus menelusuri dari awal hingga akhir (GeeksforGeeks, n.d.).
+- Penghapusan (_delete_) node tertentu, $O(n)$, karena biasanya diperlukan pencarian node target terlebih dahulu (TutorialsPoint, n.d.).
+- Penelusuran (_traversal_), $O(n)$ untuk mengunjungi seluruh node (GeeksforGeeks, n.d.).
 
 === Stack
 #ind[
@@ -160,33 +164,79 @@
 #ind[
   Operasi pada stack sangat efisien karena penambahan dan penghapusan data hanya dilakukan pada satu ujung yang disebut sebagai top (GeeksforGeeks, n.d.). Berikut adalah rincian kompleksitas waktunya:
 ]
-#list(indent: 2em)[Push, menambahkan elemen ke puncak tumpukan dengan kompleksitas $O(1)$ (GeeksforGeeks, n.d.).][Pop, menghapus elemen dari puncak tumpukan dengan kompleksitas $O(1)$ (GeeksforGeeks, n.d.)][Peek/Top, melihat elemen yang berada di posisi teratas tanpa menghapusnya dengan kompleksitas $O(1)$ (GeeksforGeeks, n.d.)][Is_empty, emeriksa apakah tumpukan dalam keadaan kosong dengan kompleksitas $O(1)$ (GeeksforGeeks, n.d.).]
+- Push, menambahkan elemen ke puncak tumpukan dengan kompleksitas $O(1)$ (GeeksforGeeks, n.d.).
+- Pop, menghapus elemen dari puncak tumpukan dengan kompleksitas $O(1)$ (GeeksforGeeks, n.d.)
+- Peek/Top, melihat elemen yang berada di posisi teratas tanpa menghapusnya dengan kompleksitas $O(1)$ (GeeksforGeeks, n.d.)
+- Is_empty, emeriksa apakah tumpukan dalam keadaan kosong dengan kompleksitas $O(1)$ (GeeksforGeeks, n.d.).
+
 #ind[
   Stack digunakan dalam berbagai skenario komputasi di mana sistem perlu memproses data dengan urutan kebalikan dari urutan masuk (GeeksforGeeks, n.d.). Beberapa aplikasi utamanya meliputi:
 ]
-#list(indent: 2em)[Manajemen pemanggilan fungsi \ Digunakan untuk mengelola function call dan proses rekursi pada program (GeeksforGeeks, n.d.).][Evaluasi ekspresi \ Membantu dalam evaluasi ekspresi matematika serta konversi antara format infix, postfix, dan prefix (GeeksforGeeks, n.d.).][Pemeriksaan simbol \ Digunakan untuk memverifikasi keseimbangan tanda kurung atau simbol dalam kode (GeeksforGeeks, n.d.).][Fitur _undo_ \ Menjadi dasar fungsionalitas pembatalan perintah (undo) pada berbagai aplikasi editor (GeeksforGeeks, n.d.).][Algoritma graf\ Menjadi komponen penting dalam mekanisme backtracking dan algoritma penelusuran Depth-First Search (DFS) (GeeksforGeeks, n.d.).]
+- Manajemen pemanggilan fungsi \ Digunakan untuk mengelola function call dan proses rekursi pada program (GeeksforGeeks, n.d.).
+- Evaluasi ekspresi \ Membantu dalam evaluasi ekspresi matematika serta konversi antara format infix, postfix, dan prefix (GeeksforGeeks, n.d.).
+- Pemeriksaan simbol \ Digunakan untuk memverifikasi keseimbangan tanda kurung atau simbol dalam kode (GeeksforGeeks, n.d.).
+- Fitur _undo_ \ Menjadi dasar fungsionalitas pembatalan perintah (undo) pada berbagai aplikasi editor (GeeksforGeeks, n.d.).
+- Algoritma graf\ Menjadi komponen penting dalam mekanisme backtracking dan algoritma penelusuran Depth-First Search (DFS) (GeeksforGeeks, n.d.).
 
 === Queue (Antrean)
 #ind[
   Queue adalah struktur data linear yang beroperasi berdasarkan prinsip FIFO (First In, First Out), yang berarti elemen yang pertama kali dimasukkan ke dalam sistem akan menjadi elemen pertama yang dikeluarkan atau diproses (Queue-it, n.d.). Struktur ini sangat efektif untuk mengelola urutan proses yang harus berjalan secara adil sesuai waktu kedatangannya, mirip dengan sistem antrean pada layanan publik (Medium, n.d.). Antrean ini memiliki dua titik akses utama yang membedakannya dari struktur data lainnya (Medium, n.d.):
 ]
-#list(indent: 2em)[Front \ Ujung depan tempat elemen diambil atau dihapus dari antrean (operasi _dequeue_).][Rear \ Ujung belakang tempat elemen baru ditambahkan ke dalam antrean (operasi _enqueue_).]
+- Front \ Ujung depan tempat elemen diambil atau dihapus dari antrean (operasi _dequeue_).
+- Rear \ Ujung belakang tempat elemen baru ditambahkan ke dalam antrean (operasi _enqueue_).
+
 #ind[Dalam sistem monitoring modern, dikembangkan variasi yang disebut Priority Queue. Struktur ini tidak hanya mempertimbangkan urutan masuk, tetapi juga memberikan bobot pada urgensi setiap data. Dalam implementasi sistem alert IoT, elemen dengan prioritas tinggi (seperti peringatan bahaya kritis) akan diproses lebih dahulu oleh sistem meskipun elemen tersebut masuk lebih lambat dibandingkan data sensor rutin lainnya (Ghazal & Hamouda, n.d.).]
+
 #ind[Efisiensi waktu merupakan aspek krusial dalam pengelolaan antrean real-time. Berdasarkan analisis kompleksitas, operasi utama pada queue adalah sebagai berikut (TutorialsPoint, n.d.):]
-#list(indent: 2em)[Enqueue: $O(1)$, proses menambahkan elemen di posisi paling belakang.][Dequeue: $O(1)$, proses menghapus elemen dari posisi paling depan.][Peek/Front: $O(1)$, operasi untuk melihat data terdepan tanpa menghapusnya.][Is_empty: $O(1)$, pengecekan status ketersediaan data dalam antrean.]
+
+- Enqueue: $O(1)$, proses menambahkan elemen di posisi paling belakang.
+- Dequeue: $O(1)$, proses menghapus elemen dari posisi paling depan.
+- Peek/Front: $O(1)$, operasi untuk melihat data terdepan tanpa menghapusnya.
+- Is_empty: $O(1)$, pengecekan status ketersediaan data dalam antrean.
+
 #ind[Khusus untuk Priority Queue yang menggunakan linked list terurut, operasi enqueue dapat meningkat menjadi O(n) karena sistem harus mencari posisi yang tepat untuk menjaga urutan prioritas (GeeksforGeeks, n.d.).]
+
 #ind[Queue digunakan secara luas dalam sistem komputasi terdistribusi untuk menangani komunikasi antar perangkat (Ghazal & Hamouda, n.d.). Pada jaringan IoT, struktur ini berfungsi sebagai penyangga (_buffer_) untuk mengatur aliran data dari sensor menuju server agar tidak terjadi kehilangan data saat trafik sedang tinggi, serta memastikan distribusi notifikasi dikirimkan secara sistematis.]
 
 === Binary Search Tree
-#ind[Binary Search Tree (BST) adalah jenis pohon biner yang memiliki aturan penempatan nilai yang spesifik: nilai pada subtree kiri selalu lebih kecil dari node induk (root), sedangkan nilai pada subtree kanan selalu lebih besar (Medium, 2022). Properti utama ini memastikan bahwa urutan nilai tetap konsisten di setiap node, sehingga memungkinkan penyimpanan data secara hierarkis tanpa harus menggunakan array terurut (UCSB, 2019).]
+#ind[Binary Search Tree (BST) adalah jenis pohon biner yang memiliki aturan penempatan nilai yang spesifik: nilai pada subtree kiri selalu lebih kecil dari node induk (root), sedangkan nilai pada subtree kanan selalu lebih besar (Medium, 2022). Properti utama ini memastikan bahwa urutan nilai tetap konsisten di setiap node, sehingga memungkinkan penyimpanan data secara hierarkis tanpa harus menggunakan array terurut (UCSB, 2019). Karakteristik penting dari BST meliputi:]
+
+- Data disusun dalam level-level node yang saling terhubung (Wikipedia, n.d.).
+- Karena strukturnya yang terorganisir, BST sangat memudahkan proses pencarian data secara terstruktur (Medium, 2022).
+- Performa BST sangat bergantung pada bentuk pohonnya. BST yang seimbang akan sangat efisien, namun jika data dimasukkan secara berurutan, pohon dapat menjadi "miring" (_skewed_) dan menyerupai linked list, yang menyebabkan penurunan performa (StackOverflow, 2014).
+
+#ind[Dalam pengelolaannya, terdapat beberapa operasi utama yang dapat dilakukan pada struktur BST (Medium, 2022; UCSB, 2019):]
+
+- Search\ Mencari node dengan membandingkan nilai kunci secara bertahap mulai dari root hingga ke bawah.
+- Insert\ Menambahkan node baru pada posisi yang tepat sesuai dengan aturan nilai lebih kecil di kiri dan lebih besar di kanan.
+- Delete\ Menghapus node tertentu dengan penanganan khusus tergantung apakah node tersebut adalah node daun, memiliki satu anak, atau dua anak.
+- Min/Max\ Menemukan nilai terkecil dengan menelusuri sisi kiri paling ujung atau nilai terbesar di sisi kanan paling ujung.
+- Traversal\ Proses mengunjungi seluruh node menggunakan metode _inorder_, _preorder_, atau _postorder_.
+
 === Graph
+#ind[Kompleksitas waktu pada BST sangat bergantung pada tinggi pohon ($h$) dan jumlah node ($n$). Berikut adalah rincian efisiensinya berdasarkan analisis teknis:]
+- Search/Insert/Delete
+  - Rata-rata (Pohon Seimbang): $O(log n)$, di mana operasi dilakukan dengan membagi ruang pencarian menjadi dua di setiap langkah (Big-O Cheat Sheet, n.d.).
+  - Kasus Terburuk (Pohon Miring): $O(n)$, terjadi ketika pohon berbentuk linear sehingga menyerupai _linked list_ (StackOverflow, 2014).
+- Min/Max: $O(h)$, bergantung pada tinggi pohon dari root ke node terdalam di sisi kiri atau kanan (Medium, n.d.).
+- Traversal: $O(n)$, karena setiap node dalam pohon harus dikunjungi tepat satu kali (Wikipedia, n.d.).
+
+#ind[BST sangat cocok digunakan untuk sistem yang memerlukan operasi pencarian, penambahan, dan penghapusan data secara frekuen, selama pohon tetap terjaga keseimbangannya. Dalam konteks sistem monitoring, BST dapat diimplementasikan sebagai registry perangkat untuk mengelola identitas sensor yang banyak dengan akses yang cepat dan terorganisir (Sensors, 2022).]
+
 === Dijkstra Algorithm
+#ind[Algoritma Dijkstra adalah metode pencarian jalur terpendek (_shortest path_) pada sebuah graf berbobot di mana semua bobot pada sisinya (_edge_) harus bernilai non-negatif. Algoritma ini bekerja dengan mencari jarak minimum dari satu titik sumber (_source node_) ke seluruh titik lainnya dalam jaringan. Prinsip utamanya adalah secara iteratif memilih titik dengan jarak sementara terkecil, lalu memperbarui (_update_) perkiraan jarak ke semua titik tetangganya (GeeksforGeeks, n.d.).]
+
+#ind[Pada graf berbobot, setiap sisi memiliki nilai numerik yang merepresentasikan jarak fisik, biaya, atau dalam konteks pemantauan jaringan, merepresentasikan latensi (BPIKA UMA, 2025).Algoritma ini sangat efektif untuk menentukan rute tercepat dalam sistem navigasi maupun sistem monitoring yang memerlukan jalur minimum dari satu titik agresi ke titik lainnya. Efisiensi algoritma ini sangat bergantung pada struktur data yang digunakan dalam implementasinya:]
+
+- Array sederhana\ Pemilihan titik dengan jarak terkecil dilakukan melalui pencarian linear, yang menghasilkan kompleksitas waktu $O(V^2)$, di mana V adalah jumlah titik. Pendekatan ini lebih mudah diimplementasikan untuk graf yang relatif kecil atau padat (BPIKA UMA, 2025).
+- Min-Heap (Priority Queeue)\ Menggunakan struktur data antrean prioritas untuk mengekstrak titik minimum, sehingga meningkatkan efisiensi menjadi $O((V plus E)log V)$ atau $O(E log V)$ untuk graf yang saling terhubung. Versi ini lebih cocok untuk sistem dengan performa tinggi dan jumlah sisi ($E$) yang besar (Reddit, 2021).
+
+#ind[Dalam arsitektur sistem monitoring, algoritma Dijkstra memainkan peran kunci dalam manajemen rute (_routing_) untuk meminimalkan keterlambatan pengiriman data. Dengan menghitung total latensi dari pusat data (_gateway_) menuju setiap perangkat sensor, sistem dapat menentukan jalur komunikasi paling efisien (Munir, 2007) . Setelah rute terpendek ditentukan, data tersebut dapat digunakan untuk mengurutkan daftar perangkat guna menghasilkan laporan audit yang sistematis berdasarkan tingkat kedekatan akses.]
 
 #pagebreak()
 #align(center)[
   = BAB III \ DESAIN DAN IMPLEMENTASI
 ]
-
 
 === Arsitektur Sistem
 === Desain Modul
