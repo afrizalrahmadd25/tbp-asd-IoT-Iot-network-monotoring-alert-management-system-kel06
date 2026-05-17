@@ -106,26 +106,26 @@
   $wide$Berdasarkan latar belakang yang telah diuraikan, permasalahan yang diangkat dalam proyek ini adalah sebagai berikut:
 ]
 #set enum(numbering: "1.", indent: 2em)
-+ Bagaimana merepresentasikan topologi jaringan IoT yang terdiri dari 40 device dan 60 edge berbobot menggunakan struktur data graph adjacency list, sehingga memungkinkan operasi penambahan, penghapusan, dan pencarian tetangga secara efisien?
-+ Bagaimana mengimplementasikan sistem antrian alert dengan mekanisme priority queue berbasis linked list yang mampu mengurutkan alert berdasarkan tingkat prioritas (CRITICAL, WARNING, INFO) secara otomatis saat proses enqueue?
-+ Bagaimana merancang registry perangkat menggunakan struktur data BST yang memungkinkan pencarian, penambahan, dan pembarahan status device berdasarkan device_id dengan kompleksitas waktu yang optimal?
-+ Bagaimana mengintegrasikan seluruh modul data structures dan algoritma (graph, BST, priority queue, stack, Dijkstra, selection sort) ke dalam satu interface CLI yang berfungsi sebagai sistem monitoring dan manajemen alert jaringan IoT secara menyeluruh?
++ Bagaimana memodelkan topologi jaringan _Mesh_ menggunakan _Graph Adjacency List_ agar operasi manajemen perangkat seperti penambahan, pencarian, hingga penghapusan perangkat secara dinamis tetap berjalan efisien dan mendukung deteksi isolasi node melalui algoritma DFS?
++ Bagaimana merancang struktur data _Priority Queue_ untuk manajemen peringatan dini yang mampu menangani trafik data sensor tinggi tanpa menjadi _bottleneck_ melalui pendekatan _linked list_ atau mekanisme _bucket_?
++ Bagaimana mengoptimalkan implementasi algoritma Dijkstra untuk penentuan rute latensi terendah dan algoritma pengurutan untuk laporan audit agar sistem tetap responsif secara _real-time_ saat jumlah perangkat IoT meningkat?
++ Bagaimana mengintegrasikan _Binary Search Tree_ (BST) sebagai basis data perangkat dan struktur _Stack_ untuk riwayat peringatan ke dalam antarmuka CLI guna menciptakan sistem monitoring yang komprehensif?
 
 === Tujuan
 #par(justify: true)[
   $wide$Berdasarkan rumusan masalah, disimpulkan tujuan dari penelitian ini adalah sebagai berikut:
 ]
 #set enum(numbering: "1.", indent: 2em)
-+ Mengetahui bagaimana merepresentasikan topologi jaringan IoT yang terdiri dari 40 device dan 60 edge berbobot menggunakan struktur data graph adjacency list, sehingga memungkinkan operasi penambahan, penghapusan, dan pencarian tetangga secara efisien.
-+ Mengetahui bagaimana mengimplementasikan sistem antrian alert dengan mekanisme priority queue berbasis linked list yang mampu mengurutkan alert berdasarkan tingkat prioritas (CRITICAL, WARNING, INFO) secara otomatis saat proses enqueue.
-+ Mengetahui bagaimana merancang registry perangkat menggunakan struktur data BST yang memungkinkan pencarian, penambahan, dan pembarahan status device berdasarkan device_id dengan kompleksitas waktu yang optimal.
-+ Mengetahui bagaimana mengintegrasikan seluruh modul data structures dan algoritma (graph, BST, priority queue, stack, Dijkstra, selection sort) ke dalam satu interface CLI yang berfungsi sebagai sistem monitoring dan manajemen alert jaringan IoT secara menyeluruh.
++ Mengetahui bagaimana memodelkan topologi jaringan _Mesh_ menggunakan _Graph Adjacency List_ agar operasi manajemen perangkat seperti penambahan, pencarian, hingga penghapusan perangkat secara dinamis tetap berjalan efisien dan mendukung deteksi isolasi node melalui algoritma DFS.
++ Mengetahui bagaimana merancang struktur data _Priority Queue_ untuk manajemen peringatan dini yang mampu menangani trafik data sensor tinggi tanpa menjadi _bottleneck_ melalui pendekatan _linked list_ atau mekanisme _bucket_.
++ Mengetahui bagaimana mengoptimalkan implementasi algoritma Dijkstra untuk penentuan rute latensi terendah dan algoritma pengurutan untuk laporan audit agar sistem tetap responsif secara _real-time_ saat jumlah perangkat IoT meningkat.
++ Mengetahui bagaimana mengintegrasikan _Binary Search Tree_ (BST) sebagai basis data perangkat dan struktur _Stack_ untuk riwayat peringatan ke dalam antarmuka CLI guna menciptakan sistem monitoring yang komprehensif.
 
 === Batasan Masalah
 #set enum(numbering: "1.", indent: 2em)
 + Jumlah device dalam simulasi dibatasi maksimal 40 node dengan komposisi tetap: 1 unit gateway, 4 unit server, dan 35 unit sensor, dengan 60 edge berbobot yang menghubungkan antar device dengan rentang latensi 5-200 ms.
 + Implementasi seluruh struktur data (linked list, stack, queue, priority queue, BST, graph) wajib dibangun dari nol tanpa menggunakan library bawaan Python seperti collections.deque, queue.PriorityQueue, atau struktur data built-in lainnya; numpy hanya diperbolehkan untuk random seed.
-+ Sistem hanya menyediakan interface berbasis command line (CLI) tanpa graphical user interface (GUI), dengan seed random tetap (np.random.seed(23) dan random.seed(23)) untuk memastikan reproducibility data uji.
++ Sistem hanya menyediakan interface berbasis command line (CLI) tanpa graphical user interface (GUI), dengan seed random tetap (_np.random.seed(23)_ dan _random.seed(23)_) untuk memastikan reproducibility data uji.
 + Riwayat alert per device dibatasi maksimal 20 entri terakhir menggunakan struktur data stack, dengan mekanisme rollback status device berdasarkan alert history yang tersimpan.
 
 #pagebreak()
@@ -256,7 +256,7 @@
 === Hasil
 
 ==== Representasi Topologi Jaringan dan Registry Perangkat
-#ind[Sistem berhasil menginisialisasi topologi jaringan Mesh yang terdiri dari 40 perangkat (1 unit _gateway_, 4 unit server, dan 35 unit sensor) yang dihubungkan oleh 60 _edge_ berbobot. Topologi ini direpresentasikan secara efisien menggunakan struktur data Graph Adjacency List berbasis _Linked List_. Seluruh identitas perangkat berhasil disimpan dalam Binary Search Tree (BST) sebagai _Device Registry_ utama, yang memungkinkan operasi pencarian dan pembaruan status perangkat berdasarkan _device_id_ dengan kompleksitas waktu yang optimal.]
+#ind[Sistem berhasil menginisialisasi topologi jaringan Mesh yang terdiri dari 40 perangkat (1 unit _gateway_, 4 unit server, dan 35 unit sensor) yang dihubungkan oleh 60 _edge_ berbobot. Topologi ini direpresentasikan secara efisien menggunakan struktur data Graph _Adjacency List_ berbasis _Linked List_. Seluruh identitas perangkat berhasil disimpan dalam Binary Search Tree (BST) sebagai _Device Registry_ utama, yang memungkinkan operasi pencarian dan pembaruan status perangkat berdasarkan _device_id_ dengan kompleksitas waktu yang optimal.]
 
 ==== Optimasi Rute dengan Algoritma Dijkstra
 #ind[Implementasi algoritma Dijkstra berhasil menentukan jalur dengan total latensi minimum dari GATEWAY_0 ke setiap perangkat dalam jaringan. Berdasarkan pengujian dengan _random seed_ tetap (seed 23), sistem menghasilkan rentang latensi antara 5 ms hingga 200 ms untuk setiap hubungan antar node. Jalur terpendek yang ditemukan oleh algoritma ini menjadi fondasi bagi sistem untuk menjamin pengiriman data sensor menuju server pusat dengan hambatan waktu seminimal mungkin.]
@@ -268,6 +268,23 @@
 #ind[Fitur laporan audit pada sistem ini menyajikan daftar perangkat yang telah diurutkan berdasarkan hasil kalkulasi latensi Dijkstra. Proses pengurutan dilakukan menggunakan algoritma Selection Sort pada _Linked List_ untuk menghasilkan urutan perangkat dari yang terdekat hingga terjauh secara sistematis. Seluruh fungsionalitas ini diintegrasikan ke dalam antarmuka Command Line Interface (CLI), yang memungkinkan pengguna memonitor jaringan dan manajemen _alert_ secara menyeluruh tanpa memerlukan _Graphical User Interface_ (GUI).]
 
 === Pembahasan
+==== Analisis Operasi Penghapusan Perangkat pada _Adjacency List_
+#ind[erdasarkan arsitektur yang diimplementasikan, operasi _remove_device_ pada _Adjacency List_ standar membutuhkan waktu $O(V plus E)$. Hal ini terjadi karena sistem tidak hanya harus menghapus node perangkat tersebut, tetapi juga harus menelusuri seluruh _adjacency list_ dari perangkat lain untuk memastikan tidak ada edge (koneksi) yang masih mengarah ke perangkat yang dihapus (Munir, 2021). Untuk mempercepat operasi ini menjadi $O(deg(v) plus 1)$, sistem dapat dimodifikasi dengan menggunakan Doubly Linked List pada setiap _adjacency list_ dan menyimpan referensi silang (_cross-reference pointer_) antar edge. Dengan cara ini, saat sebuah perangkat dihapus, sistem dapat langsung menuju lokasi memori edge terkait dan menghapusnya tanpa penelusuran linear di seluruh graf (GeeksforGeeks, n.d.).]
+
+==== Perbandingan Performa Dijkstra: Array vs Min-Heap
+#ind[Dalam jaringan IoT berskala kecil (40 _node_, 60 _edge_), perbedaan antara implementasi Dijkstra menggunakan array sederhana ($O(V^2)$) dan min-heap ($O(E log V)$) belum terlihat signifikan secara praktis. Secara matematis, untuk $V=40$, operasi array adalah sekitar 1.600, sedangkan min-heap sekitar 318 operasi ($60 times log_2 40$). Perbedaan ini menjadi kritis pada sistem IoT _real-time_ ketika jaringan berkembang menjadi ribuan perangkat, di mana latensi kalkulasi rute harus lebih kecil daripada interval pengiriman data sensor agar tidak terjadi penumpukan antrean (_bottleneck_) pada _gateway_ (BPIKA UMA, 2025).]
+
+==== Optimalisasi Antrean Alert dengan Pendekatan Bucket
+#ind[Implementasi _Priority Queue_ berbasis _Linked List_ terurut memiliki kompleksitas $O(n)$ untuk _enqueue_, yang dapat menjadi hambatan jika ribuan sensor mengirim _alert_ bersamaan. Sebagai alternatif, pendekatan 3-bucket Queue (satu antrean terpisah untuk masing-masing tier: CRITICAL, WARNING, INFO) lebih efisien.]
+- Efisiensi waktu\ Operasi _enqueue_ menjadi $O(1)$ karena setiap pesan cukup dimasukkan ke akhir antrean sesuai kategorinya.
+- Trade-off\ Pendekatan ini membutuhkan sedikit lebih banyak memori untuk menyimpan beberapa _pointer head_ dan _tail_, namun menjamin pemrosesan _alert_ CRITICAL yang instan tanpa harus menelusuri data lain (TutorialsPoint, n.d.).
+
+===== Skalabilitas DFS untuk Deteksi Isolasi Perangkat
+#ind[Algoritma DFS memiliki kompleksitas $O(V+E)$. Untuk jaringan kampus dengan 1000 sensor dan 1500 koneksi, total operasi adalah 2500. Dengan asumsi kecepatan Python $10^8$ operasi/detik, eksekusi DFS hanya membutuhkan waktu sekitar 0,000025 detik (Munir, 2021). Hal ini menunjukkan bahwa DFS sangat cocok untuk monitoring real-time dengan interval 5 detik. Jika di masa depan jaringan tumbuh menjadi jutaan node, sistem sebaiknya beralih ke pendekatan incremental menggunakan struktur data Union-Find untuk memantau konektivitas tanpa melakukan penelusuran ulang dari awal (GeeksforGeeks, n.d.).]
+
+==== Analisis Efisiensi Sorting untuk Laporan Audit
+#ind[_Selection Sort_ yang digunakan untuk laporan audit memiliki keunggulan pada jumlah pertukaran data yang minimal, yaitu $O(n)$ swap (Big-O Cheat Sheet, n.d.).]
+- Worst-case Swap\ Untuk 40 perangkat, terjadi maksimal 39 kali swap. Jika diperluas ke 10.000 perangkat, akan terjadi maksimal 9.999 swap. Meskipun swap-nya sedikit, jumlah perbandingan $O(n^2)$ akan sangat lambat untuk data besar. Untuk sistem kota pintar (10.000+ perangkat), direkomendasikan menggunakan Merge Sort yang kompatibel dengan _Linked List_. Implementasinya dilakukan dengan membagi _list_ menjadi dua bagian secara rekursif dan menggabungkannya kembali dalam keadaan terurut, menjamin performa $O(n log n)$ tanpa membutuhkan akses indeks acak seperti _Quick Sort_ (GitHub, 2026).
 
 #pagebreak()
 #align(center)[
