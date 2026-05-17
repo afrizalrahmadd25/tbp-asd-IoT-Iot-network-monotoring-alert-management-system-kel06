@@ -3,7 +3,7 @@ import time
 import random
 from dataclasses import dataclass
 from typing import Optional, List
-import linked_list
+from data_structures import linked_list
 
 # Konfigurasi Awal [4]
 np.random.seed(23)
@@ -52,3 +52,11 @@ class AlertPriorityQueue:
         self.head = self.head.next
         self._size -= 1
         return target
+    def to_list(self):
+        """Mengonversi isi antrian (Linked List) menjadi list Python untuk ditampilkan."""
+        result = []
+        curr = self.head
+        while curr:
+            result.append(curr.data) # Mengambil objek Alert dari dalam Node
+            curr = curr.next
+        return result
