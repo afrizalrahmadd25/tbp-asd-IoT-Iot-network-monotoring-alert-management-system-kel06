@@ -3,7 +3,7 @@ import time
 import random
 from dataclasses import dataclass
 from typing import Optional, List
-from linked_list import LLNode
+from data_structures.linked_list import LLNode
 
 # Konfigurasi Awal [4]
 np.random.seed(23)
@@ -53,3 +53,25 @@ class DeviceBST:
             if curr.device.device_id == device_id: return curr.device
             curr = curr.left if device_id < curr.device.device_id else curr.right
         return None
+    def inorder(self):
+        """Mengambil semua data perangkat dari BST secara berurutan."""
+        result = []
+        
+        def _traverse(node):
+            if node is not None:
+                _traverse(node.left)
+                # Catatan: ganti 'node.data' dengan 'node.device' jika node Anda menggunakan atribut device
+                result.append(node.device) 
+                _traverse(node.right)
+                
+        _traverse(self.root)
+        return result
+    def update_status(self, device_id: str, new_status: str) -> bool:
+        """Mencari perangkat di BST dan mengubah statusnya."""
+        # Manfaatkan fungsi search yang sudah ada
+        device = self.search(device_id)
+        
+        if device is not None:
+            device.status = new_status
+            return True
+        return False
