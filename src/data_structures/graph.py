@@ -25,7 +25,7 @@ class Alert:
     tipe: int           # 1=CRITICAL, 2=WARNING, 3=INFO
     pesan: str
     timestamp: float
-    lass Edge:
+    class Edge:
     def __init__(self, dest: str, latency: int):
         self.dest = dest
         self.latency = latency
