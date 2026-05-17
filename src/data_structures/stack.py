@@ -3,7 +3,7 @@ import time
 import random
 from dataclasses import dataclass
 from typing import Optional, List
-from linked_list import LLNode
+from data_structures.linked_list import LLNode
 
 # Konfigurasi Awal [4]
 np.random.seed(23)
@@ -47,3 +47,11 @@ class AlertStack:
         self.top = self.top.next
         self._size -= 1
         return data
+    def to_list(self):
+        """Mengonversi isi Stack (Linked List) menjadi list Python untuk ditampilkan."""
+        result = []
+        curr = self.top  # <-- CATATAN: Ubah jadi self.head jika di __init__ Anda pakainya self.head
+        while curr:
+            result.append(curr.data)
+            curr = curr.next
+        return result
