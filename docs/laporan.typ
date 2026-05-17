@@ -58,6 +58,10 @@
 
 }
 
+#let ind(body) = par(justify: true, first-line-indent: (amount: 2em, all: true))[#body]
+
+#show list.item: set par(justify: true)
+
 #align(center)[
   #text(16pt)[
     *IoT MONITORING & ALERT MANAGEMENT SYSTEM*
@@ -129,11 +133,52 @@
 ]
 
 === Linked List
-#set par(justify: true, first-line-indent: 2em)
-$wide$Linked list adalah struktur data linear yang menyimpan data dalam bentuk node yang saling terhubung melalui _pointer_ atau _reference_ (GeeksforGeeks, n.d.). Dalam struktur ini, setiap node biasanya berisi data dan alamat memori dari node berikutnya (GeeksforGeeks, n.d.)
+#set par(justify: true)
+#ind[
+  Linked list adalah struktur data linear yang menyimpan data dalam bentuk node yang saling terhubung melalui _pointer_ atau _reference_ (GeeksforGeeks, n.d.). Dalam struktur ini, setiap node biasanya berisi data dan alamat memori dari node berikutnya (GeeksforGeeks, n.d.). Karena node dialokasikan secara dinamis, linked list sangat cocok untuk menangani data yang ukurannya berubah-ubah dan tidak memerlukan akses acak seperti pada array (Scientific Reports, 2025).
+]
+#ind[
+  Beberapa karakteristik utama dari linked list meliputi:
+]
+#set enum(numbering: "1.", indent: 2em)
++ Kapasitasnya dapat bertambah atau berkurang dengan mudah saat program berjalan (TutorialsPoint, n.d.).
++ Elemen-elemen diakses satu per satu secara berurutan, bukan melalui indeks langsung (GeeksforGeeks, n.d.).
++ Operasi penyisipan (_insert_) dan penghapusan (_delete_) dapat dilakukan secara efisien jika posisi node sudah diketahui, meskipun pencarian tetap memerlukan penelusuran linear (GeeksforGeeks, n.d.).
++ Penggunaan memori lebih besar dibandingkan struktur data sederhana karena setiap node harus menyimpan pointer tambahan (TutorialsPoint, n.d.).
+#ind[
+  Berdasarkan cara penghubungannya, linked list dibedakan menjadi dua jenis utama. Pertama, Singly Linked List (SLL). Setiap node hanya memiliki data dan satu pointer yang menunjuk ke node berikutnya, sehingga penelusuran (traversal) hanya bisa dilakukan dalam satu arah (GeeksforGeeks, n.d.). Struktur ini lebih hemat memori namun memiliki keterbatasan jika operasi memerlukan akses ke node sebelumnya (GeeksforGeeks, n.d.). Kedua, Doubly Linked List (DLL). Setiap node memiliki dua pointer, yaitu penunjuk ke node berikutnya dan ke node sebelumnya (GeeksforGeeks, n.d.). Hal ini memungkinkan penelusuran dilakukan dua arah, yang memberikan fleksibilitas lebih besar untuk operasi di tengah atau di ujung list, meski membutuhkan memori lebih besar untuk menyimpan pointer tambahan (GeeksforGeeks, n.d.).
+]
+#ind[
+  Secara umum, efisiensi operasi pada linked list adalah sebagai berikut:
+]
+#list(indent: 2em)[Akses atau pencaarian elemen, $O(n)$ karena sistem harus menelusuri node satu per satu dari awal (TutorialsPoint, n.d.).][Penyisipan (_insert_) di depan, $O(1)$ (GeeksforGeeks, n.d.).][Penyisipan (_insert_) di belakang, $O(1)$ jika menggunakan pointer tail, namun menjadi $O(n)$ jika harus menelusuri dari awal hingga akhir (GeeksforGeeks, n.d.).][Penghapusan (_delete_) node tertentu, $O(n)$, karena biasanya diperlukan pencarian node target terlebih dahulu (TutorialsPoint, n.d.).][Penelusuran (_traversal_), $O(n)$ untuk mengunjungi seluruh node (GeeksforGeeks, n.d.).]
+
 === Stack
-=== Queue
+#ind[
+  Stack adalah struktur data linear yang mengikuti prinsip LIFO (_Last In, First Out_), yang berarti elemen yang terakhir masuk akan menjadi elemen pertama yang keluar. Konsep ini juga sering disebut dengan istilah FILO (_First In, Last Out_) (GeeksforGeeks, n.d.). Dalam konteks sistem monitoring IoT, stack sangat berguna untuk mengelola data seperti riwayat alert, di mana informasi terbaru sering kali menjadi prioritas untuk diakses terlebih dahulu.
+]
+#ind[
+  Operasi pada stack sangat efisien karena penambahan dan penghapusan data hanya dilakukan pada satu ujung yang disebut sebagai top (GeeksforGeeks, n.d.). Berikut adalah rincian kompleksitas waktunya:
+]
+#list(indent: 2em)[Push, menambahkan elemen ke puncak tumpukan dengan kompleksitas $O(1)$ (GeeksforGeeks, n.d.).][Pop, menghapus elemen dari puncak tumpukan dengan kompleksitas $O(1)$ (GeeksforGeeks, n.d.)][Peek/Top, melihat elemen yang berada di posisi teratas tanpa menghapusnya dengan kompleksitas $O(1)$ (GeeksforGeeks, n.d.)][Is_empty, emeriksa apakah tumpukan dalam keadaan kosong dengan kompleksitas $O(1)$ (GeeksforGeeks, n.d.).]
+#ind[
+  Stack digunakan dalam berbagai skenario komputasi di mana sistem perlu memproses data dengan urutan kebalikan dari urutan masuk (GeeksforGeeks, n.d.). Beberapa aplikasi utamanya meliputi:
+]
+#list(indent: 2em)[Manajemen pemanggilan fungsi \ Digunakan untuk mengelola function call dan proses rekursi pada program (GeeksforGeeks, n.d.).][Evaluasi ekspresi \ Membantu dalam evaluasi ekspresi matematika serta konversi antara format infix, postfix, dan prefix (GeeksforGeeks, n.d.).][Pemeriksaan simbol \ Digunakan untuk memverifikasi keseimbangan tanda kurung atau simbol dalam kode (GeeksforGeeks, n.d.).][Fitur _undo_ \ Menjadi dasar fungsionalitas pembatalan perintah (undo) pada berbagai aplikasi editor (GeeksforGeeks, n.d.).][Algoritma graf\ Menjadi komponen penting dalam mekanisme backtracking dan algoritma penelusuran Depth-First Search (DFS) (GeeksforGeeks, n.d.).]
+
+=== Queue (Antrean)
+#ind[
+  Queue adalah struktur data linear yang beroperasi berdasarkan prinsip FIFO (First In, First Out), yang berarti elemen yang pertama kali dimasukkan ke dalam sistem akan menjadi elemen pertama yang dikeluarkan atau diproses (Queue-it, n.d.). Struktur ini sangat efektif untuk mengelola urutan proses yang harus berjalan secara adil sesuai waktu kedatangannya, mirip dengan sistem antrean pada layanan publik (Medium, n.d.). Antrean ini memiliki dua titik akses utama yang membedakannya dari struktur data lainnya (Medium, n.d.):
+]
+#list(indent: 2em)[Front \ Ujung depan tempat elemen diambil atau dihapus dari antrean (operasi _dequeue_).][Rear \ Ujung belakang tempat elemen baru ditambahkan ke dalam antrean (operasi _enqueue_).]
+#ind[Dalam sistem monitoring modern, dikembangkan variasi yang disebut Priority Queue. Struktur ini tidak hanya mempertimbangkan urutan masuk, tetapi juga memberikan bobot pada urgensi setiap data. Dalam implementasi sistem alert IoT, elemen dengan prioritas tinggi (seperti peringatan bahaya kritis) akan diproses lebih dahulu oleh sistem meskipun elemen tersebut masuk lebih lambat dibandingkan data sensor rutin lainnya (Ghazal & Hamouda, n.d.).]
+#ind[Efisiensi waktu merupakan aspek krusial dalam pengelolaan antrean real-time. Berdasarkan analisis kompleksitas, operasi utama pada queue adalah sebagai berikut (TutorialsPoint, n.d.):]
+#list(indent: 2em)[Enqueue: $O(1)$, proses menambahkan elemen di posisi paling belakang.][Dequeue: $O(1)$, proses menghapus elemen dari posisi paling depan.][Peek/Front: $O(1)$, operasi untuk melihat data terdepan tanpa menghapusnya.][Is_empty: $O(1)$, pengecekan status ketersediaan data dalam antrean.]
+#ind[Khusus untuk Priority Queue yang menggunakan linked list terurut, operasi enqueue dapat meningkat menjadi O(n) karena sistem harus mencari posisi yang tepat untuk menjaga urutan prioritas (GeeksforGeeks, n.d.).]
+#ind[Queue digunakan secara luas dalam sistem komputasi terdistribusi untuk menangani komunikasi antar perangkat (Ghazal & Hamouda, n.d.). Pada jaringan IoT, struktur ini berfungsi sebagai penyangga (_buffer_) untuk mengatur aliran data dari sensor menuju server agar tidak terjadi kehilangan data saat trafik sedang tinggi, serta memastikan distribusi notifikasi dikirimkan secara sistematis.]
+
 === Binary Search Tree
+#ind[Binary Search Tree (BST) adalah jenis pohon biner yang memiliki aturan penempatan nilai yang spesifik: nilai pada subtree kiri selalu lebih kecil dari node induk (root), sedangkan nilai pada subtree kanan selalu lebih besar (Medium, 2022). Properti utama ini memastikan bahwa urutan nilai tetap konsisten di setiap node, sehingga memungkinkan penyimpanan data secara hierarkis tanpa harus menggunakan array terurut (UCSB, 2019).]
 === Graph
 === Dijkstra Algorithm
 
