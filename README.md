@@ -29,25 +29,47 @@ Sistem ini menggunakan Struktur data berupa:
       -Digunakan untuk: Mencari jalur dengan total latensi minimum dari GATEWAY_0 ke setiap perangkat dalam         jaringan.
   6. Selection Sort (pada Linked List)
      -Digunakan untuk: Mengurutkan daftar perangkat berdasarkan latensi ke gateway setelah Dijkstra               selesai, guna menghasilkan laporan audit yang terurut dari perangkat terdekat ke terjauh.
-# Fitur Sistem
-  1. Manajemen perangkat IoT (ADD_DEVICE, ADD_LINK)
-  2. Alert Priority Queue — CRITICAL selalu diproses duluan
-  3. Riwayat alert per-device via AlertStack (HISTORY)
-  4. Rollback status perangkat (ROLLBACK_STATUS)
-  5. Routing latensi minimum Dijkstra (ROUTING)
-  6. Deteksi perangkat terisolasi DFS (ISOLASI)
-  7. Audit latensi seluruh jaringan (AUDIT_LATENSI)
-  8. Laporan jaringan lengkap (LAPORAN_JARINGAN)
+# Fitur Program
+1. **ADD_DEVICE** — Menambahkan perangkat IoT baru (SENSOR/GATEWAY/SERVER) ke graph dan BST registry. `Big-O: O(1)`
+2. **ADD_LINK** — Menambahkan koneksi berbobot (latensi ms) antara dua perangkat. `Big-O: O(1)`
+3. **ALERT_IN** — Memasukkan alert (CRITICAL/WARNING/INFO) ke Priority Queue. CRITICAL selalu di depan. `Big-O: O(n)`
+4. **PROCESS_ALERT** — Memproses alert paling prioritas dari antrian. `Big-O: O(1)`
+5. **PENDING_ALERTS** — Menampilkan semua alert yang masih menunggu di antrian.
+6. **HISTORY** — Menampilkan 20 riwayat alert terbaru per perangkat menggunakan Stack. `Big-O: O(n)`
+7. **ROLLBACK_STATUS** — Membatalkan alert terakhir dan mengembalikan status perangkat. `Big-O: O(1)`
+8. **CARI_DEVICE** — Mencari perangkat di BST berdasarkan device_id. `Big-O: O(log n)`
+9. **UPDATE_STATUS** — Memperbarui status perangkat menjadi ONLINE/OFFLINE. `Big-O: O(log n)`
+10. **ROUTING** — Mencari jalur latensi minimum dari GATEWAY_0 ke perangkat tujuan (Dijkstra). `Big-O: O(V²+E)`
+11. **ISOLASI** — Mendeteksi perangkat yang tidak terjangkau dari GATEWAY_0 menggunakan DFS. `Big-O: O(V+E)`
+12. **AUDIT_LATENSI** — Mengurutkan semua perangkat berdasarkan latensi ke gateway (Selection Sort). `Big-O: O(n²)`
+13. **LAPORAN_JARINGAN** — Menampilkan ringkasan kondisi seluruh jaringan IoT.
+14. **KELUAR** — Keluar dari program.
 
 # Instalasi
-git clone https://github.com/afrizalrahmadd25/tbp-asd-IoT-...
-cd tbp-asd-IoT-...
+
+```bash
+git clone https://github.com/afrizalrahmadd25/tbp-asd-IoT-Iot-network-monotoring-alert-management-system-kel06.git
+cd tbp-asd-IoT-Iot-network-monotoring-alert-management-system-kel06
 pip install -r requirements.txt
+```
 
-# Cara Menjalankan Program
+# Cara Menjalankan
+```bash
 python src/main.py
-
+```
 # Pengujian
+```bash
 pytest tests/ -v
-
+```
+# Analisis Kompleksitas
+| Operasi | Big-O Waktu | Big-O Ruang |
+|---|---|---|
+| add_device / add_link | O(1) | O(V+E) |
+| enqueue alert | O(n) | O(n) |
+| dequeue alert | O(1) | O(1) |
+| BST insert/search | O(log n) avg | O(n) |
+| DFS isolasi | O(V+E) | O(V) |
+| Dijkstra routing | O(V²+E) | O(V) |
+| Stack push/pop | O(1) | O(k) |
+| Selection Sort | O(n²) | O(1) |
      
